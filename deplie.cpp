@@ -19,6 +19,7 @@
 #include <array>
 #include <cmath>
 #include "../svg.hpp"
+// https://raw.githubusercontent.com/vincentlaucsb/svg/master/src/svg.hpp
 
 using std::cout;
 using std::string;
@@ -29,11 +30,13 @@ using std::array;
 using std::endl;
 using std::stringstream;
 using std::fstream;
+using std::ostream;
 
-double epsilon = 0.5;
+const double epsilon = 0.5;
+const double dMin = -999999;
+const double dMax =  999999;
 
-class Vec2
-{
+class Vec2 {
 	public:
 	double x, y;
 
@@ -60,11 +63,14 @@ class Vec2
 	Vec2 operator / (const double& d) {
 		return Vec2 (this->x / d, this->y / d);
 	}
-
 };
 
-class Vec3
-{
+ostream& operator << (ostream& os, const Vec2& v) {
+	os << v.x << ", " << v.y;
+	return os;
+}
+
+class Vec3 {
 	public:
 	double x, y, z;
 
@@ -93,18 +99,29 @@ class Vec3
 	}
 };
 
-class Triangle2d
-{
+ostream& operator << (ostream& os, const Vec3& v) {
+	os << v.x << ", " << v.y << ", " << v.z;
+	return os;
+}
+
+class Triangle2d {
 	public:
 		Vec2 a, b, c;
 
 		Triangle2d() {}
-
 		Triangle2d(Vec2 a, Vec2 b, Vec2 c) : a(a), b(b), c(c) {}
+
+		Vec2 point(int n) {
+			return n == 0 ? this->a : n == 1 ? this->b : this->c;
+		}
 };
 
-class Triangle3d
-{
+ostream& operator << (ostream& os, const Triangle2d& t) {
+	os << "("<< t.a << "), (" << t.b << "), (" << t.c << ")";
+	return os;
+}
+
+class Triangle3d {
 	public:
 		Vec3 a, b, c;
 
@@ -158,6 +175,11 @@ class Triangle3d
 		}
 };
 
+ostream& operator << (ostream& os, const Triangle3d& t) {
+	os << "("<< t.a << "), (" << t.b << "), (" << t.c << ")";
+	return os;
+}
+
 class Voisin { // VOISINAGE
 	public :
 		int nF;
@@ -204,18 +226,56 @@ class Arete { // ARETE (pour numérotation)
 			return false;
 		}
 };
-class Depliage { // DEPLIAGE
+
+class Facette { // Facette à déplier
 	public :
 		int id;
 		Triangle2d triangle;
 		int groupe;
-		int page;
-		int piece;
-		int orig;
+		bool pose;
 
-		Depliage() {}
-		Depliage(int pid, Triangle2d pt, int pg) 
-			: id(pid), triangle(pt), groupe(pg), page(-1), piece(-1), orig(-1) {}
+		Facette() {}
+		Facette(int pid, Triangle2d pt, int pg) 
+			: id(pid), triangle(pt), groupe(pg), pose(false) {}
+};
+
+class Piece {
+	public :
+		int id;
+		Vec2 pMin;
+		Vec2 pMax;
+		vector<Facette> facettes;
+		
+		Piece() {}
+		Piece(int pid) : 
+			id(pid), pMin(Vec2(dMax, dMax)), pMax(Vec2(dMin, dMin))
+			{}
+			
+		void recadre(Triangle2d t) {
+			for (int i = 0; i < 3; i++) {
+				if (t.point(i).x < pMin.x) pMin.x = t.point(i).x;
+				if (t.point(i).y < pMin.y) pMin.y = t.point(i).y;
+				if (t.point(i).x > pMax.x) pMax.x = t.point(i).x;
+				if (t.point(i).y > pMax.y) pMax.y = t.point(i).y;
+			}
+		}
+
+		void ajouteFace(Facette f) {
+			facettes.push_back(Facette(f));
+			recadre(f.triangle);
+		}
+};
+
+class Page {
+	public :
+		int id;
+		vector<Piece> pieces;
+
+		Page() {}
+		Page(int pid) : id(pid) {}
+		void ajoutePiece(Piece p) {
+			pieces.push_back(p);
+		}
 };
 
 int prec (int n) { // retourne le précédent dans le triplet (0,1,2)
@@ -235,26 +295,19 @@ class Donnees { // DONNEES DEPLIAGE
 		vector<Triangle2d> t2d;
 		vector<array<Voisin, 3>> voisins;
 		vector<Arete> aretes;
-		vector<Depliage> depliage;
 		vector<Copl> copl;
 		int nbFaces;
+		vector<Facette> facettes;
+		vector<Page> pages;
 		string fichierOBJ;
 		vector<string> vLignes;
 
-		int PremFaceLibre(int g) {
-			bool ok = false;
-			unsigned int d;
-			for (d = 0; d < depliage.size(); d++) {
-				if (depliage[d].groupe == g && depliage[d].page == -1) {
-					ok = true;
-					break;
-				}
+		Facette* premFaceLibre(int g) {
+			for (auto&& f : facettes) {
+				if (f.groupe == g && !f.pose)
+					return &f;
 			}
-			
-			if (ok)
-				return d;
-			else
-				return -1;
+			return nullptr;
 		}
 
 		void init_triangles() {
@@ -330,7 +383,15 @@ class Donnees { // DONNEES DEPLIAGE
 			cout << "NB POINTS : " << pts.size() << endl;
 			int n = 0;
 			for (auto&& el : pts) {
-				cout << n++ << ": " << el.x << " " << el.y << " " << el.z << endl;
+				cout << n++ << ": " << el << endl;
+			}
+		}
+
+		void affiche_triangles () {
+			cout << "NB TRIANGLES : " << t2d.size() << endl;
+			int n = 0;
+			for (auto&& el : t2d) {
+				cout << n++ << ": " << el << endl;
 			}
 		}
 
@@ -365,7 +426,7 @@ class Donnees { // DONNEES DEPLIAGE
 
 		void affiche_voisinage () {
 			cout << "VOISINAGE" << endl;
-			for (unsigned int i = 0; i < faces.size(); i++) {
+			for (int i = 0; i < (int)faces.size(); i++) {
 				cout << i << ": ";
 				for (int j = 0; j < 3; j++)
 					cout << " " << voisins[i][j].nF;
@@ -373,13 +434,49 @@ class Donnees { // DONNEES DEPLIAGE
 			}
 		}
 
+		void charge() {
+			fstream fsFichierOBJ(fichierOBJ);
+			string strTampon;
+			while (getline (fsFichierOBJ, strTampon))
+				vLignes.push_back(strTampon);
+			fsFichierOBJ.close();
+
+			groupes.push_back("");
+			int gCourant = 0;
+
+			for (auto&& elem : vLignes) {
+				if (elem.starts_with("v "))
+					pts.push_back(lit_points(elem));
+				else
+				if (elem.starts_with("f "))
+					faces.push_back(lit_faces(elem, gCourant));
+				else
+				if (elem.starts_with("g ")) {
+					if (!groupes[0].empty()) {
+						groupes.push_back("");
+						gCourant++;
+					}
+				}
+				else
+				if (elem.starts_with("usemtl ")) {
+					stringstream ss(elem);
+					string s;
+					ss>> s;
+					ss>> s;
+					groupes.back() = s;
+				}
+			}
+			vLignes.clear();
+			nbFaces = faces.size();
+		}
+
 	public :
 		void affiche_depl () {
 			cout << "DEPLIAGE" << endl;
-			for (unsigned int i = 0; i < depliage.size(); i++) {
-				Depliage d = depliage[i];
-				cout << d.id << " " << d.groupe;
-				cout << " " << d.page << " "<< d.piece << " " << d.orig << endl;
+			for (int i = 0; i < (int)facettes.size(); i++) {
+				Facette f = facettes[i];
+				cout << f.id << " " << f.groupe << endl;
+				//cout << " " << f.page << " "<< f.piece << " " << f.orig << endl;
 			}
 			cout << endl;
 		}
@@ -417,62 +514,32 @@ class Donnees { // DONNEES DEPLIAGE
 			r.push_back(g);
 			return r;
 		}
+		void init_depliage() {
+			for (int i = 0; i < nbFaces; i++) {
+				Facette d = Facette(i, t2d[i], faces[i][3]);
+				facettes.push_back(d);
+			}
+		}
 
 		int getNbFaces() { return nbFaces;}
 
 		Donnees(string f) : fichierOBJ(f) {
-			fstream fsFichierOBJ(fichierOBJ);
-			string strTampon;
-			while (getline (fsFichierOBJ, strTampon))
-				vLignes.push_back(strTampon);
-			fsFichierOBJ.close();
-
-			groupes.push_back("");
-			int gCourant = 0;
-
-			for (auto&& elem : vLignes) {
-				if (elem.starts_with("v "))
-					pts.push_back(lit_points(elem));
-				else
-				if (elem.starts_with("f "))
-					faces.push_back(lit_faces(elem, gCourant));
-				else
-				if (elem.starts_with("g ")) {
-					if (!groupes[0].empty()) {
-						groupes.push_back("");
-						gCourant++;
-					}
-				}
-				else
-				if (elem.starts_with("usemtl ")) {
-					stringstream ss(elem);
-					string s;
-					ss>> s;
-					ss>> s;
-					groupes.back() = s;
-				}
-			}
-			vLignes.clear();
-			nbFaces = faces.size();
-			
+			charge();
 			init_triangles();
 			calc_voisinage();
 			calc_copl();
 			num_aretes();
-			
-			for (int i = 0; i < nbFaces; i++) {
-				Depliage d = Depliage(i, t2d[i], faces[i][3]);
-				depliage.push_back(d);
-			}
-			
+			init_depliage();
+
 			// depliage
-			for (unsigned int nG = 0; nG < groupes.size()+1; nG++) {
-				cout << "groupe " << nG << " : ";
-				int prochainLibre = PremFaceLibre(nG);
-				if (prochainLibre > -1)
-					cout << depliage[prochainLibre].id << endl;
+			for (int nG = 0; nG < (int)groupes.size(); nG++) {
+				Facette* prochainLibre = premFaceLibre(nG);
+				if (prochainLibre)
+					//cout << facettes[prochainLibre].id << endl;
+					cout << prochainLibre->id << endl;
 				else
 					cout << "vide" << endl;
+				
 			}
 			
 			
@@ -503,21 +570,20 @@ class Donnees { // DONNEES DEPLIAGE
 		}
 
 		void affiche() {
-			affiche_points();
-			affiche_faces();
-			affiche_groupes();
-			affiche_voisinage();
-			affiche_aretes();
+			affiche_triangles();
+			//affiche_points();
+			//affiche_faces();
+			//affiche_groupes();
+			//affiche_voisinage();
+			//affiche_aretes();
 		}
 };
 
-int main () {
+int main (int argc, char** argv) {
 	// Le volume est lu depuis un fichier au format .OBJ
-	//Donnees donnees("cube.obj");
-	//Donnees donnees("modelePyramide20.obj");
-	Donnees donnees("modelePyramide20Blue.obj");
 	
-	// Creation du dépliage
-
+	Donnees donnees(argv[1]); // Creation du dépliage
+	
+	//donnees.affiche();
 	donnees.affiche_depl();
 }
