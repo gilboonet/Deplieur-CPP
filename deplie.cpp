@@ -231,12 +231,13 @@ class Facette { // Facette à déplier
 	public :
 		int id;
 		Triangle2d triangle;
+		array<int,3 > faces;
+		array<Voisin,3> voisins;
 		int groupe;
 		bool pose;
+		int orig;
 
 		Facette() {}
-		Facette(int pid, Triangle2d pt, int pg) 
-			: id(pid), triangle(pt), groupe(pg), pose(false) {}
 };
 
 class Piece {
@@ -260,7 +261,8 @@ class Piece {
 			}
 		}
 
-		void ajouteFace(Facette f) {
+		void ajouteFace(Facette f, int orig) {
+			f.orig = orig;
 			facettes.push_back(Facette(f));
 			recadre(f.triangle);
 		}
@@ -473,12 +475,15 @@ class Donnees { // DONNEES DEPLIAGE
 	public :
 		void affiche_depl () {
 			cout << "DEPLIAGE" << endl;
-			for (int i = 0; i < (int)facettes.size(); i++) {
-				Facette f = facettes[i];
-				cout << f.id << " " << f.groupe << endl;
-				//cout << " " << f.page << " "<< f.piece << " " << f.orig << endl;
+			for (auto&& page : pages) {
+				cout << "PAGE " << page.id << endl;
+				for (auto&& piece : page.pieces) {
+					cout << "..PIECE " << piece.id << endl;
+					for (auto && face : piece.facettes) {
+						cout << "....FACE " << face.id << " orig: "<< face.orig << endl;
+					}
+				}
 			}
-			cout << endl;
 		}
 
 		static Vec3 lit_points (string ch) {
@@ -516,8 +521,77 @@ class Donnees { // DONNEES DEPLIAGE
 		}
 		void init_depliage() {
 			for (int i = 0; i < nbFaces; i++) {
-				Facette d = Facette(i, t2d[i], faces[i][3]);
+				Facette d = Facette();
+				d.id = i;
+				d.triangle = t2d[i];
+				for (int j = 0; j < 3; j++)
+					d.faces[j]= faces[i][j];
+				d.groupe = faces[i][3];
+				d.voisins = voisins[i];
+				d.pose = false;
 				facettes.push_back(d);
+			}
+		}
+		
+		int pieceProchainID() {
+			int id = 0;
+			bool trouve;
+			do {
+				trouve = false;
+				for (auto&& page : pages) {
+					for (auto&& piece : page.pieces) {
+						if (piece.id == id) {
+							id++;
+							trouve = true;
+							break;
+						}
+					}
+					if (trouve)
+						break;
+				}
+			} while (trouve);
+			return id;
+		}
+
+		void depliage() {
+			for (int nG = 0; nG < (int)groupes.size(); nG++) {
+				cout << "Groupe " << nG << endl;
+				Facette* prochainLibre;
+				do {
+					prochainLibre = premFaceLibre(nG);
+					if (prochainLibre) {
+						cout << "test " << prochainLibre->id<< endl;
+						prochainLibre->pose = true;
+						Page page = Page(pages.size());
+						Piece piece = Piece(pieceProchainID());
+						piece.ajouteFace(*prochainLibre, -1);
+						
+						bool ok;
+						do {
+							ok = false;
+							for (auto&& fr : piece.facettes) {
+								for (auto&& fv : fr.voisins) {
+									cout << "test : "<< fv.nF << endl;
+									Facette proch = facettes[fv.nF];
+									if (proch.groupe == nG && !proch.pose) {
+										piece.ajouteFace(proch, fr.id);
+										facettes[fv.nF].pose = true;
+										cout << "OK "<< prochainLibre->id << ":";
+										cout << proch.id << endl;
+										ok = true;
+										break;
+									}
+								}
+								if (ok)
+									break;
+							}
+						}while (ok);
+						
+						page.ajoutePiece(piece);
+						pages.push_back(page);
+					}
+				} while (prochainLibre);
+				
 			}
 		}
 
@@ -531,19 +605,8 @@ class Donnees { // DONNEES DEPLIAGE
 			num_aretes();
 			init_depliage();
 
-			// depliage
-			for (int nG = 0; nG < (int)groupes.size(); nG++) {
-				Facette* prochainLibre = premFaceLibre(nG);
-				if (prochainLibre)
-					//cout << facettes[prochainLibre].id << endl;
-					cout << prochainLibre->id << endl;
-				else
-					cout << "vide" << endl;
-				
-			}
-			
-			
-			
+			depliage();
+
 			/*SVG::SVG root;
 			root.set_attr("width", "210");
 			root.set_attr("height", "297");
@@ -570,11 +633,11 @@ class Donnees { // DONNEES DEPLIAGE
 		}
 
 		void affiche() {
-			affiche_triangles();
+			//affiche_triangles();
 			//affiche_points();
-			//affiche_faces();
+			affiche_faces();
 			//affiche_groupes();
-			//affiche_voisinage();
+			affiche_voisinage();
 			//affiche_aretes();
 		}
 };
@@ -584,6 +647,6 @@ int main (int argc, char** argv) {
 	
 	Donnees donnees(argv[1]); // Creation du dépliage
 	
-	//donnees.affiche();
+	donnees.affiche();
 	donnees.affiche_depl();
 }
