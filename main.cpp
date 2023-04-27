@@ -18,9 +18,13 @@
 int main (int argc, char** argv) {
     // Le volume est lu depuis un fichier au format .OBJ
     if (argc > 0) {
-        Donnees donnees(argv[1]); // Creation du dépliage
-        donnees.affiche();
-        donnees.affiche_depl();
+        Donnees donnees (argv[1]); // Creation du dépliage
+
+        donnees.depliage ();
+        donnees.cree_SVG ();
+
+        donnees.affiche ();
+        donnees.affiche_depl ();
         return 0;
     }
 }

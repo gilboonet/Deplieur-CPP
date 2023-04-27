@@ -1,6 +1,7 @@
 #ifndef VOISIN_H
 #define VOISIN_H
 
+
 class Voisin { // VOISINAGE
 public :
     int id;

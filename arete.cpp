@@ -1,18 +1,16 @@
-#include "arete.h"
 #include <iostream>
 
-using std::min;
-using std::max;
+#include "arete.h"
 
 Arete::Arete() {}
 Arete::Arete(const int n1, const int n2) {
-    nMin = min(n1, n2);
-    nMax = max(n1, n2);
+    nMin = std::min(n1, n2);
+    nMax = std::max(n1, n2);
     nA = -1;
 }
 Arete::Arete(const int n1, const int n2, const int n) {
-    nMin = min(n1, n2);
-    nMax = max(n1, n2);
+    nMin = std::min(n1, n2);
+    nMax = std::max(n1, n2);
     nA = n;
 }
 bool Arete::operator == (const Arete& a) {

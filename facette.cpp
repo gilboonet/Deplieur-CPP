@@ -1,8 +1,8 @@
 #include "facette.h"
 #include "triangle2d.h"
 
-Facette::Facette() {}
+Facette::Facette () {}
 
-bool Facette::overlap(Facette f) {
+bool Facette::overlap (const Facette& f) {
     return this->triangle.overlap(f.triangle);
 }
