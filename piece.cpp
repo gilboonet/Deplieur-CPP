@@ -3,8 +3,7 @@
 
 Piece::Piece() {}
 Piece::Piece(int pid) :
-    id(pid), pMin(Vec2(dMax, dMax)), pMax(Vec2(dMin, dMin))
-{}
+    id(pid), pMin(Vec2(dMax, dMax)), pMax(Vec2(dMin, dMin)), O(Vec2(0.0, 0.0)) {}
 
 void Piece::recadre(Triangle2d t) {
     for (int i = 0; i < 3; i++) {
@@ -15,9 +14,8 @@ void Piece::recadre(Triangle2d t) {
     }
 }
 
-void Piece::ajouteFace(Facette f, int orig) {
-    f.orig = orig;
-    facettes.push_back(Facette(f));
-    recadre(f.triangle);
+void Piece::ajouteFace(Facette* f, int orig) {
+    (*f).orig = orig;
+    faceId.push_back((*f).id);
+    recadre((*f).triangle);
 }
-

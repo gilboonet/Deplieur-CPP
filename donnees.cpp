@@ -1,7 +1,7 @@
 #include "donnees.h"
 
 std::ostream& operator << (std::ostream& os, const Vec2& v) {
-    os << v.x << ", " << v.y;
+    os << "(" << v.x << ", " << v.y << ")";
     return os;
 }
 
@@ -11,7 +11,7 @@ std::ostream& operator << (std::ostream& os, const Vec3& v) {
 }
 
 std::ostream& operator << (std::ostream& os, const Triangle2d& t) {
-    os << "("<< t.a << "), (" << t.b << "), (" << t.c << ")";
+    os << "(" << t.a << ", " << t.b << ", " << t.c << ")";
     return os;
 }
 
@@ -52,7 +52,7 @@ void Donnees::calc_voisinage() {
                 if (vi != i) {
                     for (int k = 0; (k < 3) && !ok; k++)
                         if ((faces[vi][k] == faces[i][suiv(j)])
-                         && (faces[vi][suiv(k)] == faces[i][j])) {
+                            && (faces[vi][suiv(k)] == faces[i][j])) {
                             tmpV[j] = Voisin(j, vi, suiv(k));
                             if (j == 2)
                                 voisins.push_back(tmpV);
@@ -187,14 +187,36 @@ void Donnees::charge() {
     nbFaces = faces.size();
 }
 
+Piece* Donnees::pieceGetById (std::vector<Piece> &pieces, int id) {
+    for (auto&& p : pieces) {
+        if (p.id == id)
+            return &p;
+    }
+    return nullptr;
+}
+
+void Donnees::affiche_facettes (std::ostream &os) {
+    if (&os == &std::cout)
+        os << "FACETTES" << std::endl;
+    for (auto&& f : facettes) {
+        os << f.id << "," << f.orig << "," << f.page << ","
+            << f.piece << "," << f.triangle;
+        if (f.orig == -1)
+            os << "," << pieceGetById(pages[f.page].pieces, f.piece)->O;
+        os << std::endl;
+    }
+}
+
 void Donnees::affiche_depl () {
     std::cout << "DEPLIAGE" << std::endl;
     for (auto&& page : pages) {
         std::cout << "PAGE " << page.id << std::endl;
         for (auto&& piece : page.pieces) {
-            std::cout << "..PIECE " << piece.id << std::endl;
-            for (auto && face : piece.facettes) {
-                std::cout << "....FACE " << face.id << " orig: "<< face.orig << std::endl;
+            std::cout << "..PIECE " << piece.id << " " << piece.O<< std::endl;
+            for (auto && fid : piece.faceId) {
+                Facette face = facettes[fid];
+                std::cout << "....FACE " << face.id << " orig: " << face.orig
+                          << " page: " << face.page << " piece: " << face.piece << std::endl;
             }
         }
     }
@@ -238,6 +260,9 @@ void Donnees::init_depliage() {
     for (int i = 0; i < nbFaces; i++) {
         Facette d = Facette();
         d.id = i;
+        d.orig = -1;
+        d.page = -1;
+        d.piece = -1;
         d.triangle = t2d[i];
         for (int j = 0; j < 3; j++)
             d.faces[j]= faces[i][j];
@@ -248,7 +273,7 @@ void Donnees::init_depliage() {
     }
 }
 
-int Donnees::pieceProchainID() {
+/*int Donnees::pieceProchainId() {
     int id = 0;
     bool trouve;
     do {
@@ -266,11 +291,28 @@ int Donnees::pieceProchainID() {
         }
     } while (trouve);
     return id;
+}*/
+int Donnees::pieceProchainId() {
+    int id = 0;
+    bool trouve;
+    do {
+        trouve = false;
+        for (auto&& page : pages) {
+            if (pieceGetById(page.pieces, id)) {
+                id++;
+                trouve = true;
+                break;
+            }
+        }
+        //if (trouve)
+        //    break;
+    } while (trouve);
+    return id;
 }
+
 
 void Donnees::depliage() {
     for (int nG = 0; nG < (int)groupes.size(); nG++) {
-        std::cout << "Groupe " << nG << std::endl;
         Facette* prochainLibre;
         Page page;
         Piece piece;
@@ -279,41 +321,45 @@ void Donnees::depliage() {
             if (prochainLibre) {
                 prochainLibre->pose = true;
                 page = Page(pages.size());
-                piece = Piece(pieceProchainID());
-                piece.ajouteFace(*prochainLibre, -1);
+                piece = Piece(pieceProchainId());
+                prochainLibre->orig = -1;
+                piece.faceId.push_back(prochainLibre->id);
+                piece.recadre(prochainLibre->triangle);
+                facettes[prochainLibre->id].page = page.id;
+                facettes[prochainLibre->id].piece = piece.id;
 
                 bool ok;
                 do {
                     ok = false;
-                    for (auto&& fr : piece.facettes) {
+                    for (int f : piece.faceId) {
+                        Facette fr = facettes[f];
                         for (auto&& fv : fr.voisins) {
-                            Facette proch = facettes[fv.nF];
-                            if (proch.groupe == nG && !proch.pose) {
+                            if (facettes[fv.nF].groupe == nG && !facettes[fv.nF].pose) {
                                 // rapprocher
-                                proch.triangle = proch.triangle
-                                  + fr.triangle.point(fv.id)
-                                  - proch.triangle.point(fv.idx);
+                                facettes[fv.nF].triangle += fr.triangle.point(fv.id)
+                                                           - facettes[fv.nF].triangle.point(fv.idx);
                                 // tourner
                                 double angle = calc_angle(
                                     fr.triangle.point(fv.id),
                                     fr.triangle.point(suiv(fv.id)),
-                                    proch.triangle.point(prec(fv.idx))
-                                );
-                                proch.triangle = proch.triangle.rotation(
-                                    fr.triangle.point(fv.id),
-                                    angle
-                                );
+                                    facettes[fv.nF].triangle.point(prec(fv.idx))
+                                    );
+                                facettes[fv.nF].triangle.rotation(fr.triangle.point(fv.id), angle);
                                 // collision ?
                                 ok = true;
-                                for (auto&& t : piece.facettes)
-                                    if (t.overlap(proch)) {
+                                for (auto&& t : piece.faceId)
+                                    if (facettes[t].overlap(facettes[fv.nF])) {
                                         ok = false;
                                         break;
                                     }
                                 // ajouter
                                 if (ok) {
-                                    piece.ajouteFace(proch, fr.id);
+                                    piece.faceId.push_back(fv.nF);
+                                    piece.recadre(facettes[fv.nF].triangle);
+                                    facettes[fv.nF].orig = f;
                                     facettes[fv.nF].pose = true;
+                                    facettes[fv.nF].page = page.id;
+                                    facettes[fv.nF].piece = piece.id;
                                     break;
                                 }
                             }
@@ -329,11 +375,11 @@ void Donnees::depliage() {
         } while (prochainLibre);
     }
     // reajustement sur (0,0)
-    //cout << page.id << " " << piece.pMin << endl;
     for (auto&& p : pages)
         for (auto&& pi : p.pieces) {
-            for (auto&& f: pi.facettes)
-                f.triangle = f.triangle - pi.pMin;
+            for (auto&& fid: pi.faceId) {
+                facettes[fid].triangle = facettes[fid].triangle - pi.pMin;
+            }
             pi.pMax = pi.pMax - pi.pMin;
             pi.pMin = pi.pMin - pi.pMin;
         }
@@ -357,29 +403,43 @@ void Donnees::cree_SVG() {
     root.set_attr("height", "297");
     root.set_attr("viewBox", "0 0 210 297");
 
+    // Basic CSS support
+    root.style("path").set_attr("fill", "none")
+        .set_attr("stroke", "black");
+    //root.style("rect#my_rectangle").set_attr("fill", "red");
+    root.style("text").set_attr("fill", "blue")
+        .set_attr("font-size", "10px")
+        .set_attr("text-anchor", "middle")
+        .set_attr("dominant-baseline", "middle");
+
+
     auto shapes = root.add_child<SVG::Group>();
     std::vector<SVG::Path*> tris;
+    std::vector<SVG::Text*> txts;
+
 
     int deltaP = 0;
-    for(auto&& pg:pages) {
-        for(auto&& pi:pg.pieces) {
-            for(auto&& t:pi.facettes) {
-                SVG::Path* rect = shapes->add_child<SVG::Path>("p1");
-                auto tt = t.triangle;
-                rect->start(tt.a.x + deltaP, tt.a.y);
-                rect->line_to(tt.b.x + deltaP, tt.b.y);
-                rect->line_to(tt.c.x + deltaP, tt.c.y);
+    for(auto&& pg : pages) {
+        for(auto&& pi : pg.pieces) {
+            for(auto&& fid : pi.faceId) {
+                Facette t = facettes[fid];
+                SVG::Path* rect = shapes->add_child<SVG::Path>();
+                //Vec2 dP = Vec2(deltaP, 0);
+                auto tt = t.triangle + Vec2(deltaP, 0) + pi.O;
+                rect->start(tt.a.x, tt.a.y);
+                rect->line_to(tt.b.x, tt.b.y);
+                rect->line_to(tt.c.x, tt.c.y);
                 rect->to_origin();
                 tris.push_back(rect);
+
+                Vec2 c = tt.centroid ();
+                SVG::Text* txt = shapes->add_child<SVG::Text>(c.x, c.y, std::to_string(fid));
+                txts.push_back(txt);
             }
         }
         deltaP += 220;
     }
 
-    // Automatically scale width and height to fit elements
-    //root.autoscale();
-
-    // Output our drawing
     std::ofstream outfile("test.svg");
     outfile << std::string(root);
 }

@@ -16,6 +16,8 @@ public :
     int groupe;
     bool pose;
     int orig;
+    int page;
+    int piece;
 
     Facette ();
 

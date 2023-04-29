@@ -23,7 +23,11 @@ int main (int argc, char** argv) {
         donnees.depliage ();
         donnees.cree_SVG ();
 
-        donnees.affiche ();
+        std::ofstream sauveDat("donnees.dat");
+        donnees.affiche_facettes (std::cout);
+        donnees.affiche_facettes (sauveDat);
+        sauveDat.close();
+
         donnees.affiche_depl ();
         return 0;
     }

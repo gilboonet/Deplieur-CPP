@@ -13,13 +13,16 @@ public:
     Triangle2d (Vec2 a, Vec2 b, Vec2 c);
 
     Triangle2d operator + (const Vec2& v);
+    Triangle2d &operator +=(const Vec2& v);
     Triangle2d operator - (const Vec2& v);
+    Triangle2d &operator -=(const Vec2& v);
     Triangle2d operator * (const double& v);
     Triangle2d operator / (const double& v);
 
     Vec2 point (const int n);
-    Triangle2d rotation (const Vec2& C, const double angle);
+    Triangle2d& rotation(const Vec2& C, const double angle);
     bool overlap (const Triangle2d& t2);
+    Vec2 centroid();
 };
 
 bool li (Vec2 l1S, Vec2 l1E, Vec2 l2S, Vec2 l2E);

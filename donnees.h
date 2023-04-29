@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
+#include <ostream>
 
 #include "vec2.h"
 #include "vec3.h"
@@ -53,15 +54,17 @@ private :
     void affiche_aretes ();
     void affiche_voisinage ();
     void charge ();
+    Piece* pieceGetById (std::vector<Piece> &pieces, int id);
 
 public :
     Donnees (std::string f);
 
     void affiche_depl ();
+    void affiche_facettes (std::ostream& os);
     static Vec3 lit_points (std::string ch);
     static std::vector<int> lit_faces (std::string ch, int g);
     void init_depliage ();
-    int pieceProchainID ();
+    int pieceProchainId ();
     void depliage ();
     int getNbFaces ();  
     void affiche ();

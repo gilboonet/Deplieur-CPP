@@ -12,8 +12,18 @@ Triangle2d Triangle2d::operator + (const Vec2& v) {
     return Triangle2d(Vec2(a + v), Vec2(b + v), Vec2(c + v));
 }
 
+Triangle2d& Triangle2d::operator += (const Vec2& v) {
+    *this = Triangle2d(Vec2(a + v), Vec2(b + v), Vec2(c + v));
+    return *this;
+}
+
 Triangle2d Triangle2d::operator - (const Vec2& v) {
     return Triangle2d(Vec2(a - v), Vec2(b - v), Vec2(c - v));
+}
+
+Triangle2d& Triangle2d::operator -= (const Vec2& v) {
+    *this = Triangle2d(Vec2(a - v), Vec2(b - v), Vec2(c - v));
+    return *this;
 }
 
 Triangle2d Triangle2d::operator * (const double& v) {
@@ -24,8 +34,9 @@ Triangle2d Triangle2d::operator / (const double& v) {
     return Triangle2d(Vec2(a / v), Vec2(b / v), Vec2(c / v));
 }
 
-Triangle2d Triangle2d::rotation(const Vec2& C, const double angle) {
-    return Triangle2d(a.rotation(C, angle), b.rotation(C, angle), c.rotation(C, angle));
+Triangle2d& Triangle2d::rotation(const Vec2& C, const double angle) {
+    *this = Triangle2d(a.rotation(C, angle), b.rotation(C, angle), c.rotation(C, angle));
+    return *this;
 }
 
 bool li (Vec2 l1S, Vec2 l1E, Vec2 l2S, Vec2 l2E) {
@@ -58,4 +69,11 @@ bool Triangle2d::overlap(const Triangle2d& t) {
     return li(this->a, this->b, t.a, t.b) || li(this->a, this->b, t.b, t.c) || li(this->a, this->b, t.c, t.a)
         || li(this->b, this->c, t.a, t.b) || li(this->b, this->c, t.b, t.c) || li(this->b, this->c, t.c, t.a)
         || li(this->c, this->a, t.a, t.b) || li(this->c, this->a, t.b, t.c) || li(this->c, this->a, t.c, t.a);
+}
+
+Vec2 Triangle2d::centroid () {
+    return Vec2(
+        (a.x + b.x + c.x) / 3,
+        (a.y + b.y + c.y) / 3
+    );
 }
