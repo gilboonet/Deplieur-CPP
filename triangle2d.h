@@ -9,23 +9,23 @@ class Triangle2d
 public:
     Vec2 a, b, c;
 
-    Triangle2d ();
-    Triangle2d (Vec2 a, Vec2 b, Vec2 c);
+    Triangle2d();
+    Triangle2d(Vec2, Vec2, Vec2);
 
-    Triangle2d operator + (const Vec2& v);
-    Triangle2d &operator +=(const Vec2& v);
-    Triangle2d operator - (const Vec2& v);
-    Triangle2d &operator -=(const Vec2& v);
-    Triangle2d operator * (const double& v);
-    Triangle2d operator / (const double& v);
+    Triangle2d operator +(const Vec2&);
+    Triangle2d &operator +=(const Vec2&);
+    Triangle2d operator -(const Vec2&);
+    Triangle2d &operator -=(const Vec2&);
+    Triangle2d operator *(const double&);
+    Triangle2d operator /(const double&);
 
-    Vec2 point (const int n);
-    Triangle2d& rotation(const Vec2& C, const double angle);
-    bool overlap (const Triangle2d& t2);
+    Vec2 point(const int);
+    Triangle2d& rotation(const Vec2&, const double);
+    bool overlap(const Triangle2d&);
     Vec2 centroid();
 };
 
-bool li (Vec2 l1S, Vec2 l1E, Vec2 l2S, Vec2 l2E);
+bool li(Vec2, Vec2, Vec2, Vec2);
 
 
 #endif // TRIANGLE2D_H

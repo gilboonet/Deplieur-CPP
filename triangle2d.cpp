@@ -8,29 +8,29 @@ Vec2 Triangle2d::point(const int n) {
     return n == 0 ? this->a : n == 1 ? this->b : this->c;
 }
 
-Triangle2d Triangle2d::operator + (const Vec2& v) {
+Triangle2d Triangle2d::operator +(const Vec2& v) {
     return Triangle2d(Vec2(a + v), Vec2(b + v), Vec2(c + v));
 }
 
-Triangle2d& Triangle2d::operator += (const Vec2& v) {
+Triangle2d& Triangle2d::operator +=(const Vec2& v) {
     *this = Triangle2d(Vec2(a + v), Vec2(b + v), Vec2(c + v));
     return *this;
 }
 
-Triangle2d Triangle2d::operator - (const Vec2& v) {
+Triangle2d Triangle2d::operator -(const Vec2& v) {
     return Triangle2d(Vec2(a - v), Vec2(b - v), Vec2(c - v));
 }
 
-Triangle2d& Triangle2d::operator -= (const Vec2& v) {
+Triangle2d& Triangle2d::operator -=(const Vec2& v) {
     *this = Triangle2d(Vec2(a - v), Vec2(b - v), Vec2(c - v));
     return *this;
 }
 
-Triangle2d Triangle2d::operator * (const double& v) {
+Triangle2d Triangle2d::operator *(const double& v) {
     return Triangle2d(Vec2(a * v), Vec2(b * v), Vec2(c * v));
 }
 
-Triangle2d Triangle2d::operator / (const double& v) {
+Triangle2d Triangle2d::operator /(const double& v) {
     return Triangle2d(Vec2(a / v), Vec2(b / v), Vec2(c / v));
 }
 
@@ -39,27 +39,27 @@ Triangle2d& Triangle2d::rotation(const Vec2& C, const double angle) {
     return *this;
 }
 
-bool li (Vec2 l1S, Vec2 l1E, Vec2 l2S, Vec2 l2E) {
+bool li(Vec2 l1S, Vec2 l1E, Vec2 l2S, Vec2 l2E) {
     // true if the lines intersect
-    if ((l1S == l2S) || (l1S == l2E) || (l1E == l2S) || (l1E == l2E)) {
+    if((l1S == l2S) ||(l1S == l2E) ||(l1E == l2S) ||(l1E == l2E)) {
         return 0;
     }
 
-    double denominator = ((l2E.y - l2S.y) * (l1E.x - l1S.x))
-                         - ((l2E.x - l2S.x) * (l1E.y - l1S.y));
+    double denominator =((l2E.y - l2S.y) *(l1E.x - l1S.x))
+                         -((l2E.x - l2S.x) *(l1E.y - l1S.y));
 
-    if (denominator == 0)
+    if(denominator == 0)
         return 0;
 
     double
         a = l1S.y - l2S.y,
         b = l1S.x - l2S.x,
-        numerator1 = ((l2E.x - l2S.x) * a) - ((l2E.y - l2S.y) * b),
-        numerator2 = ((l1E.x - l1S.x) * a) - ((l1E.y - l1S.y) * b);
+        numerator1 =((l2E.x - l2S.x) * a) -((l2E.y - l2S.y) * b),
+        numerator2 =((l1E.x - l1S.x) * a) -((l1E.y - l1S.y) * b);
     a = numerator1 / denominator;
     b = numerator2 / denominator;
 
-    if ((a > 0) && (a < 1) && (b > 0) && (b < 1))
+    if((a > 0) &&(a < 1) &&(b > 0) &&(b < 1))
         return 1;
     else
         return 0;
@@ -71,9 +71,9 @@ bool Triangle2d::overlap(const Triangle2d& t) {
         || li(this->c, this->a, t.a, t.b) || li(this->c, this->a, t.b, t.c) || li(this->c, this->a, t.c, t.a);
 }
 
-Vec2 Triangle2d::centroid () {
+Vec2 Triangle2d::centroid() {
     return Vec2(
-        (a.x + b.x + c.x) / 3,
-        (a.y + b.y + c.y) / 3
+       (a.x + b.x + c.x) / 3,
+       (a.y + b.y + c.y) / 3
     );
 }

@@ -8,8 +8,8 @@ public :
     int nV;
     double cop;
 
-    Copl ();
-    Copl (int nF, int nV, double cop);
+    Copl();
+    Copl(int, int, double);
 };
 
 

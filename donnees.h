@@ -40,35 +40,37 @@ private :
     std::vector<Facette> facettes;
     std::vector<Page> pages;
     std::string fichierOBJ;
+    std::string fichierDAT;
+    std::string fichierSVG;
     std::vector<std::string> vLignes;
 
-    Facette* premFaceLibre (int g);
-    void init_triangles ();
-    void calc_voisinage ();
-    void calc_copl ();
-    void num_aretes ();
-    void affiche_points ();
-    void affiche_triangles ();
-    void affiche_faces ();
-    void affiche_groupes ();
-    void affiche_aretes ();
-    void affiche_voisinage ();
-    void charge ();
-    Piece* pieceGetById (std::vector<Piece> &pieces, int id);
+    Facette* premFaceLibre(int);
+    void init_triangles();
+    void calc_voisinage();
+    void calc_copl();
+    void num_aretes();
+    void affiche_points();
+    void affiche_triangles();
+    void affiche_faces();
+    void affiche_groupes();
+    void affiche_aretes();
+    void affiche_voisinage();
+    void charge();
+    Piece* pieceGetById(std::vector<Piece> &, int);
 
 public :
-    Donnees (std::string f);
+    Donnees(std::string, std::string, std::string);
 
-    void affiche_depl ();
-    void affiche_facettes (std::ostream& os);
-    static Vec3 lit_points (std::string ch);
-    static std::vector<int> lit_faces (std::string ch, int g);
-    void init_depliage ();
-    int pieceProchainId ();
-    void depliage ();
-    int getNbFaces ();  
-    void affiche ();
-    void cree_SVG();
+    void affiche_depl(std::ostream &os);
+    void affiche_facettes(std::ostream&);
+    static Vec3 lit_points(std::string);
+    static std::vector<int> lit_faces(std::string, int);
+    void init_depliage();
+    int pieceProchainId();
+    void depliage();
+    int getNbFaces();
+    void affiche();
+    void cree_SVG(std::string);
 };
 
 

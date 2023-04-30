@@ -13,13 +13,13 @@ public :
     Vec2 pMin;
     Vec2 pMax;
     Vec2 O;
-    std::vector<int> faceId;  
+    std::vector<int> faceId;
 
-    Piece ();
-    Piece (int pid);
+    Piece();
+    Piece(int);
 
-    void recadre (Triangle2d t);
-    void ajouteFace (Facette* f, int orig);
+    void recadre(const Triangle2d&);
+    void ajouteFace(Facette&, int, int, int);
 };
 
 

@@ -19,9 +19,9 @@ public :
     int page;
     int piece;
 
-    Facette ();
+    Facette();
 
-    bool overlap (const Facette &f);
+    bool overlap(const Facette&);
 };
 
 

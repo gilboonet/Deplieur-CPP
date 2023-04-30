@@ -13,8 +13,8 @@ Arete::Arete(const int n1, const int n2, const int n) {
     nMax = std::max(n1, n2);
     nA = n;
 }
-bool Arete::operator == (const Arete& a) {
-    if (nMin == a.nMin && nMax == a.nMax)
+bool Arete::operator ==(const Arete& a) {
+    if(nMin == a.nMin && nMax == a.nMax)
         return true;
     return false;
 }

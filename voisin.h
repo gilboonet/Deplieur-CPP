@@ -9,8 +9,8 @@ public :
     int idx;
     double cop;
 
-    Voisin ();
-    Voisin (int vid, int vnF, int vidx);
+    Voisin();
+    Voisin(int, int, int);
 };
 
 

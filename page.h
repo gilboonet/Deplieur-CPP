@@ -11,10 +11,10 @@ public :
     int id;
     std::vector<Piece> pieces;
 
-    Page ();
-    Page (int pid);
+    Page();
+    Page(int);
 
-    void ajoutePiece (const Piece &p);
+    void ajoutePiece(const Piece &);
 };
 
 

@@ -6,15 +6,15 @@ class Vec3 {
 public:
     double x, y, z;
 
-    Vec3 ();
-    Vec3 (double x, double y, double z);
+    Vec3();
+    Vec3(double, double, double);
 
-    Vec3 operator + (const Vec3& v);
-    Vec3 operator - (const Vec3& v);
-    Vec3 operator * (const double& d);
-    Vec3 operator / (const double& d);
+    Vec3 operator +(const Vec3&);
+    Vec3 operator -(const Vec3&);
+    Vec3 operator *(const double&);
+    Vec3 operator /(const double&);
 
-    double distance (const Vec3& v);
+    double distance(const Vec3&);
 };
 
 

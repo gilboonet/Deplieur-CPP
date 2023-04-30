@@ -2,17 +2,17 @@
 #define ARETE_H
 
 
-class Arete { // ARETE (pour numérotation)
+class Arete { // ARETE(pour numérotation)
 public :
     int nMin;
     int nMax;
     int nA;
 
-    Arete ();
-    Arete (const int n1, const int n2);
-    Arete (const int n1, const int n2, const int n);
+    Arete();
+    Arete(const int, const int);
+    Arete(const int, const int, const int);
 
-    bool operator == (const Arete& a);
+    bool operator ==(const Arete&);
 };
 
 
