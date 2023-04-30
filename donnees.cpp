@@ -1,19 +1,17 @@
 #include "donnees.h"
 
 std::ostream& operator <<(std::ostream& os, const Vec2& v) {
-    //os << "(" << v.x << ", " << v.y << ")";
-    os << v.x << "," << v.y;
+    os << v.x << " " << v.y;
     return os;
 }
 
 std::ostream& operator <<(std::ostream& os, const Vec3& v) {
-    //os << v.x << ", " << v.y << ", " << v.z;
     os << v.x << "," << v.y << "," << v.z;
     return os;
 }
 
 std::ostream& operator <<(std::ostream& os, const Triangle2d& t) {
-    os << t.a << "," << t.b << "," << t.c;
+    os << t.a << " " << t.b << " " << t.c;
     return os;
 }
 
@@ -154,40 +152,59 @@ void Donnees::affiche_voisinage() {
     }
 }
 
-void Donnees::charge() {
+void Donnees::chargeOBJ() {
     std::fstream fsFichierOBJ(fichierOBJ);
-    std::string strTampon;
-    while(getline(fsFichierOBJ, strTampon))
-        vLignes.push_back(strTampon);
-    fsFichierOBJ.close();
 
     groupes.push_back("");
     int gCourant = 0;
 
-    for(auto&& elem : vLignes) {
-        if(elem.starts_with("v "))
+    std::string elem;
+    while(getline(fsFichierOBJ, elem)) {
+        if(elem.starts_with("v ")) {
             pts.push_back(lit_points(elem));
-        else
-            if(elem.starts_with("f "))
-                faces.push_back(lit_faces(elem, gCourant));
-            else
-                if(elem.starts_with("g ")) {
-                    if(!groupes[0].empty()) {
-                        groupes.push_back("");
-                        gCourant++;
-                    }
-                }
-                else
-                    if(elem.starts_with("usemtl ")) {
-                        std::stringstream ss(elem);
-                        std::string s;
-                        ss >> s;
-                        ss >> s;
-                        groupes.back() = s;
-                    }
+        } else if(elem.starts_with("f ")) {
+            faces.push_back(lit_faces(elem, gCourant));
+        } else if(elem.starts_with("g ")) {
+            if(!groupes[0].empty()) {
+                groupes.push_back("");
+                gCourant++;
+            }
+        } else if(elem.starts_with("usemtl ")) {
+            std::stringstream ss(elem);
+            std::string s;
+            ss >> s;
+            ss >> s;
+            groupes.back() = s;
+        }
     }
-    vLignes.clear();
+    fsFichierOBJ.close();
     nbFaces = faces.size();
+}
+
+void Donnees::chargeDAT() {
+    std::fstream fsFichierDAT(fichierDAT);
+
+    std::string elem;
+    Page page;
+    Piece piece;
+    Facette facette;
+    while(getline(fsFichierDAT, elem)) {
+        if(elem.starts_with("P ")) {
+            page = lit_page(elem);
+            pages.push_back(page);
+        } else if(elem.starts_with("p ")) {
+            piece = lit_piece(elem);
+            page.pieces.push_back(piece);
+            pages[page.id] = page;
+        } else if(elem.starts_with("f ")) {
+            facette = lit_facette(elem);
+            facettes[facette.id] = facette;
+            piece.faceId.push_back(facette.id);
+            page.pieces.back() = piece;
+            pages[page.id] = page;
+        }
+    }
+
 }
 
 Piece* Donnees::pieceGetById(std::vector<Piece> &pieces, int id) {
@@ -199,8 +216,7 @@ Piece* Donnees::pieceGetById(std::vector<Piece> &pieces, int id) {
 }
 
 void Donnees::affiche_facettes(std::ostream &os) {
-    os << fichierOBJ << std::endl;
-    os << facettes.size()<< std::endl;
+    os << "FICHIER OBJ : " << fichierOBJ << std::endl;
 
     for(auto&& f : facettes) {
         os << f.id << "," << f.orig << "," << f.page << ","
@@ -224,14 +240,15 @@ void Donnees::affiche_depl(std::ostream &os) {
             }
         }
     } else {
+        os << fichierOBJ << std::endl;
         for(auto&& page : pages) {
             os << "P " << page.id << std::endl;
             for(auto&& piece : page.pieces) {
-                os << "p " << piece.id << "," << piece.O << std::endl;
+                os << "p " << piece.id << " " << piece.O << std::endl;
                 for(auto && fid : piece.faceId) {
                     Facette f = facettes[fid];
-                    os << "f " << f.id << "," << f.orig << "," << f.page
-                       << "," << f.piece << "," << f.triangle << std::endl;
+                    os << "f " << f.id << " " << f.orig << " " << f.page
+                       << " " << f.piece << " " << f.triangle << std::endl;
                 }
             }
         }
@@ -270,6 +287,51 @@ std::vector<int> Donnees::lit_faces(std::string ch, int g) {
     }
     r.push_back(g);
     return r;
+}
+
+Page Donnees::lit_page(std::string ch) {
+    Page page;
+    std::stringstream ss(ch);
+
+    char T;
+    ss >> T >> page.id;
+
+    std::cout << T << " " << page.id << std::endl;
+    return page;
+}
+Piece Donnees::lit_piece(std::string ch){
+    Piece piece;
+    piece.id = 0;
+    std::stringstream ss(ch);
+
+    char T;
+    piece.O = Vec2(0.0, 0.0);
+
+    ss >> T >> piece.id >> piece.O.x >> piece.O.y;
+    std::cout << T << " " << piece.O << std::endl;
+    return piece;
+}
+Facette Donnees::lit_facette(std::string ch){
+    Facette f;
+    /*f.id = 0;
+    f.orig = 0;
+    f.page = 0;
+    f.piece = 0;
+    f.triangle = Triangle2d(Vec2(0.0, 0.0), Vec2(0.0, 0.0), Vec2(0.0, 0.0));
+*/
+    std::stringstream ss(ch);
+
+    char T;
+
+    ss >> T >> f.id >> f.orig >> f.page >> f.piece
+       >> f.triangle.a.x >> f.triangle.a.y
+       >> f.triangle.b.x >> f.triangle.b.y
+       >> f.triangle.c.x >> f.triangle.c.y;
+
+    std::cout << T << " " << f.id << " " << f.orig << " " << f.page << " "
+              << f.piece << " " << f.triangle << std::endl;
+
+    return f;
 }
 
 void Donnees::init_depliage() {
@@ -375,7 +437,7 @@ int Donnees::getNbFaces() { return nbFaces;}
 Donnees::Donnees(std::string fOBJ, std::string fDAT, std::string fSVG) :
     fichierOBJ(fOBJ), fichierDAT(fDAT), fichierSVG(fSVG) {
 
-    charge();
+    chargeOBJ();
     init_triangles();
     calc_voisinage();
     calc_copl();

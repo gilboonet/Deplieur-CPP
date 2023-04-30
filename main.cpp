@@ -97,12 +97,21 @@ int main(int argc, char** argv) {
 
             std::ifstream fDAT(dat);
             if (fDAT.good()) {
-                getline(fDAT, obj);
+                getline(fDAT, obj); // 1ère ligne : fichier .obj
+                fDAT.close();
             }
 
             Donnees donnees(obj, dat, svg);
 
+            donnees.chargeDAT();
+
+            // Lit P => ajoutePage
+            // ----- Lit p => ajoutePiece
+            // ----------- Lit f => ajouteFace
+
+            std::cout << "--- FACETTES" << std::endl;
             donnees.affiche_facettes(std::cout);
+            donnees.cree_SVG(svg);
         }
         return 0;
     }

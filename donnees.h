@@ -42,7 +42,6 @@ private :
     std::string fichierOBJ;
     std::string fichierDAT;
     std::string fichierSVG;
-    std::vector<std::string> vLignes;
 
     Facette* premFaceLibre(int);
     void init_triangles();
@@ -55,7 +54,7 @@ private :
     void affiche_groupes();
     void affiche_aretes();
     void affiche_voisinage();
-    void charge();
+    void chargeOBJ();
     Piece* pieceGetById(std::vector<Piece> &, int);
 
 public :
@@ -63,8 +62,12 @@ public :
 
     void affiche_depl(std::ostream &os);
     void affiche_facettes(std::ostream&);
+    void chargeDAT();
     static Vec3 lit_points(std::string);
     static std::vector<int> lit_faces(std::string, int);
+    static Page lit_page(std::string);
+    static Piece lit_piece(std::string);
+    static Facette lit_facette(std::string);
     void init_depliage();
     int pieceProchainId();
     void depliage();
