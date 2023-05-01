@@ -1,9 +1,9 @@
 //---------------------------------------------------------
-// DEPLIAGE D'UN VOLUME version C++
+// unfolding D'UN VOLUME version C++
 // 1°) Lecture du fichier (format OBJ) contenant le volume
 // 2°) Extraction des points (FAIT) et des faces (FAIT)
 // 3°) Création des triangles 3d et 2d (FAIT)
-// 4°) Calcul du voisinage de chaque face (FAIT)
+// 4°) Calcul du neighbourhood de chaque face (FAIT)
 // 5°) Calcul des coplanéités (FAIT)
 // 6°) Numérotation des arêtes (FAIT)
 // 7°) Découpage en classes (FAIT)
@@ -13,7 +13,7 @@
 // https://raw.githubusercontent.com/vincentlaucsb/svg/master/src/svg.hpp
 // C++20
 
-#include "donnees.h"
+#include "unfold.h"
 
 int main(int argc, char** argv) {
 //-----> pour créer un nouveau dépliage <fichier.dep> à partir de <fichier.obj>
@@ -62,15 +62,15 @@ int main(int argc, char** argv) {
                 return 1;
             }
 
-            Donnees donnees(obj, dat, svg); // Creation du dépliage
+            Unfold unfold(obj, dat, svg); // Creation du dépliage
 
-            donnees.depliage();
-            donnees.cree_SVG(svg);
+            unfold.unfolding();
+            unfold.create_SVG(svg);
 
-            donnees.affiche_depl(std::cout);
+            unfold.display_unfold(std::cout);
 
             std::ofstream sauveDat(dat);
-            donnees.affiche_depl(sauveDat);
+            unfold.display_unfold(sauveDat);
             sauveDat.close();
 
         } else if(ext.ends_with(".dat")) {
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
                 ext = ext.substr(0, ext.size() -4);
                 svg = ext + ".svg";
                 ok = true;
-            } else if(argc > 3) {
+            } else if(argc > 2) {
                 ext = argv[2];
                 if (ext.ends_with(".svg")) {
                     svg = argv[2];
@@ -101,17 +101,11 @@ int main(int argc, char** argv) {
                 fDAT.close();
             }
 
-            Donnees donnees(obj, dat, svg);
+            Unfold unfold(obj, dat, svg);
+            unfold.load_DAT();
 
-            donnees.chargeDAT();
-
-            // Lit P => ajoutePage
-            // ----- Lit p => ajoutePiece
-            // ----------- Lit f => ajouteFace
-
-            std::cout << "--- FACETTES" << std::endl;
-            donnees.affiche_facettes(std::cout);
-            donnees.cree_SVG(svg);
+            std::cout << "LECTURE fichier " << dat << std::endl;
+            unfold.create_SVG(svg);
         }
         return 0;
     }

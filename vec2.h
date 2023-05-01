@@ -17,7 +17,8 @@ public:
 
     double distance(const Vec2 &v);
     double angle(const Vec2 &p);
-    Vec2 rotation(const Vec2 &c, const double a);
+    Vec2 rotate(const Vec2 &c, const double a);
+    Vec2 middle(const Vec2& v);
 };
 
 #endif // VEC2_H

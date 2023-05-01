@@ -15,7 +15,7 @@ double Vec2::angle(const Vec2& p) {
     return atan2(p.y - this->y, p.x - this->x);
 }
 
-Vec2 Vec2::rotation(const Vec2& c, const double a) {
+Vec2 Vec2::rotate(const Vec2& c, const double a) {
     double lcos = cos(a);
     double lsin = sin(a);
 
@@ -23,9 +23,12 @@ Vec2 Vec2::rotation(const Vec2& c, const double a) {
        (lcos *(this->x - c.x)) +(lsin *(this->y - c.y)) + c.x,
        (lcos *(this->y - c.y)) -(lsin *(this->x - c.x)) + c.y
     );
-
     return r;
+}
 
+Vec2 Vec2::middle(const Vec2& v) {
+    Vec2 r = (*this + v) / 2;
+    return r;
 }
 
 bool Vec2::operator ==(const Vec2& v) {

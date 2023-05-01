@@ -20,7 +20,7 @@ public:
     Triangle2d operator /(const double&);
 
     Vec2 point(const int);
-    Triangle2d& rotation(const Vec2&, const double);
+    Triangle2d& rotate(const Vec2&, const double);
     bool overlap(const Triangle2d&);
     Vec2 centroid();
 };

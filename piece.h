@@ -10,9 +10,10 @@
 class Piece {
 public :
     int id;
-    Vec2 pMin;
-    Vec2 pMax;
-    Vec2 O;
+    Vec2 pMin;  // Biggest coordinates
+    Vec2 pMax;  // Smallest coordinates
+    Vec2 O;     // Origin
+    double a;   // rotation angle
     std::vector<int> faceId;
 
     Piece();

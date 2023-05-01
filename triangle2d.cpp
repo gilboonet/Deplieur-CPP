@@ -34,8 +34,8 @@ Triangle2d Triangle2d::operator /(const double& v) {
     return Triangle2d(Vec2(a / v), Vec2(b / v), Vec2(c / v));
 }
 
-Triangle2d& Triangle2d::rotation(const Vec2& C, const double angle) {
-    *this = Triangle2d(a.rotation(C, angle), b.rotation(C, angle), c.rotation(C, angle));
+Triangle2d& Triangle2d::rotate(const Vec2& C, const double angle) {
+    *this = Triangle2d(a.rotate(C, angle), b.rotate(C, angle), c.rotate(C, angle));
     return *this;
 }
 
