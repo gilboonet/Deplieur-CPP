@@ -2,15 +2,17 @@
 #define COPL_H
 
 
-class Copl { // COPLANEITE
+class Copl { // COPLANARITY
 public :
     int nF;
     int nV;
-    double cop;
+    int cop;
 
     Copl();
-    Copl(int, int, double);
+    Copl(int, int, int);
 };
+
+Copl* getCopl(int F, int V);
 
 
 #endif // COPL_H

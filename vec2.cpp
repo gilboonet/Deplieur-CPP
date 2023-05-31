@@ -32,11 +32,16 @@ Vec2 Vec2::middle(const Vec2& v) {
 }
 
 bool Vec2::operator ==(const Vec2& v) {
-    return this->distance(v) < epsilon;
+    return eq(this->x, v.x) && eq(this->y, v.y);
 }
 
 Vec2 Vec2::operator+(const Vec2& v) {
     return Vec2(this->x + v.x, this->y + v.y);
+}
+
+Vec2& Vec2::operator+=(const Vec2& v) {
+    *this = Vec2(this->x + v.x, this->y + v.y);
+    return *this;
 }
 
 Vec2 Vec2::operator-(const Vec2& v) {
@@ -50,3 +55,16 @@ Vec2 Vec2::operator *(const double& d) {
 Vec2 Vec2::operator /(const double& d) {
     return Vec2(this->x / d, this->y / d);
 }
+
+bool Vec2::operator <(const Vec2& v) const {
+    if (this->x < v.x)
+        return true;
+    else if  (eq(this->x, v.x) && this->y <= v.y)
+        return true;
+    else
+        return false;
+}
+
+/*SVG::Point Vec2::SVG_Point() {
+    return SVG::Point(this->x, this->y);
+}*/

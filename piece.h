@@ -3,16 +3,16 @@
 
 #include <vector>
 
-#include "vec2.h"
+#include <QVector2D>
 #include "facette.h"
 #include "triangle2d.h"
 
 class Piece {
 public :
     int id;
-    Vec2 pMin;  // Biggest coordinates
-    Vec2 pMax;  // Smallest coordinates
-    Vec2 O;     // Origin
+    QVector2D pMin;  // Biggest coordinates
+    QVector2D pMax;  // Smallest coordinates
+    QVector2D O;     // Origin
     double a;   // rotation angle
     std::vector<int> faceId;
 
@@ -21,6 +21,7 @@ public :
 
     void recadre(const Triangle2d&);
     void ajouteFace(Facette&, int, int, int);
+    bool operator ==(const Piece&);
 };
 
 

@@ -1,10 +1,10 @@
 #ifndef PAGE_H
 #define PAGE_H
 
-
 #include <vector>
 
 #include "piece.h"
+#include "rotationslider.h"
 
 class Page {
 public :
@@ -14,7 +14,7 @@ public :
     Page();
     Page(int);
 
-    void ajoutePiece(const Piece &);
+    void ajoutePiece(const Piece&);
 };
 
 

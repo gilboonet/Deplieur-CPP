@@ -5,15 +5,15 @@
 #include <array>
 
 #include "triangle2d.h"
-#include "voisin.h"
+#include "neighbor.h"
 
-class Facette { // Facette à déplier
+class Facette { // Triangle to unfold
 public :
     int id;
     Triangle2d triangle;
     std::array<int,3 > faces;
-    std::array<Voisin,3> voisins;
-    int groupe;
+    std::array<Neighbor,3> neighbors;
+    int group;
     bool pose;
     int orig;
     int page;
@@ -22,6 +22,7 @@ public :
     Facette();
 
     bool overlap(const Facette&);
+    Neighbor* findNeighbor(int);
 };
 
 
