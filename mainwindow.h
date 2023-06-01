@@ -18,10 +18,22 @@ public:
     Unfold *unfold;
 
 private slots:
-    void handleQuitterTriggered();
-    void handleOuvrirTriggered();
+    void nouveau();
+    void ouvrir();
+    void sauver();
+    void quitter();
 
-    void hSliderValueChanged(int value);
+    void sliderValueChanged(int);
+    void tournerD05();
+    void tournerG05();
+    void tournerD15();
+    void tournerG15();
+
+    void monter();
+    void descendre();
+    void droite();
+    void gauche();
+
     void zoomNormal();
     void zoomPlus();
     void zoomMoins();

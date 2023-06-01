@@ -7,6 +7,7 @@
 #include <QCursor>
 #include <QGraphicsItem>
 #include <QGraphicsProxyWidget>
+#include <QGraphicsSceneMouseEvent>
 
 #include "page.h"
 #include "piece.h"
@@ -19,15 +20,14 @@ TitleItem::TitleItem(const QString text, Unfold *d) :
     setPen(QPen(Qt::blue, 1));
     setAcceptHoverEvents(true);
     setCursor(QCursor(Qt::OpenHandCursor));
-    setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsSelectable
-           | QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemSendsGeometryChanges);
+    setFlags(QGraphicsItem::ItemIsFocusable
+    //| QGraphicsItem::ItemIsSelectable
+    | QGraphicsItem::ItemIsMovable);
 
 }
 
-void TitleItem::mousePressEvent(QGraphicsSceneMouseEvent *)
+void TitleItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    //qInfo() << donnees->rSlider;
-
     int n = text().toInt()-1;
     donnees->setPieceCourante(n, this);
     Piece *pieceCourante = donnees->getPieceCourante();
@@ -58,7 +58,9 @@ void TitleItem::mousePressEvent(QGraphicsSceneMouseEvent *)
         Piece *pieceCourante = donnees->getPieceCourante();
         if (pieceCourante) {
             //qInfo() << QVector2D(newPos);
-            //pieceCourante->O = QVector2D(newPos.x(), newPos.y());
+            pieceCourante->O = QVector2D(
+            pieceCourante->O.x() + this->pos().x() - newPos.x(),
+            pieceCourante->O.y() + this->pos().y() - newPos.y());
         }
 
     }

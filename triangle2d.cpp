@@ -41,7 +41,8 @@ Triangle2d& Triangle2d::rotate(const QVector2D& C, const double angle) {
 
 bool li(QVector2D l1S, QVector2D l1E, QVector2D l2S, QVector2D l2E) {
     // true if the lines intersect
-    if((l1S == l2S) ||(l1S == l2E) ||(l1E == l2S) ||(l1E == l2E)) {
+    //if((l1S == l2S) ||(l1S == l2E) ||(l1E == l2S) ||(l1E == l2E)) {
+    if (eq(l1S, l2S) || eq(l1S, l2E) || eq(l1E, l2S) || eq(l1E, l2E)) {
         return 0;
     }
 

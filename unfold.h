@@ -82,6 +82,7 @@ public :
     std::vector<Page>       pages;
     QGraphicsView*          rVue;
     QSlider*                rSlider;
+    bool                    deja;
     TitleItem*              titleItem;
     int                     IdPieceCourante;
     void                    display_unfold(std::ostream &);
@@ -107,7 +108,8 @@ public :
     void                    setPieceCourante(const int, TitleItem*);
     Page*                   getPage(const int);
     Piece*                  getPiece(const int);
-    void                    rotatePieceCourante(int value);
+    void                    rotatePieceCourante(int, int = 0);
+    void                    deplacePieceCourante(int, int);
     void                    stickPiece(int, int);
     void                    splitPiece(int, int);
 };

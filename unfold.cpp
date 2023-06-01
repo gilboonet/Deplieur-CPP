@@ -10,6 +10,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsView>
+#include <QList>
 #include <QObject>
 #include <QSlider>
 
@@ -17,6 +18,11 @@ struct fct {
     int id;
     int orig;
     bool pose;
+};
+
+struct ppos {
+    int id;
+    QVector2D pos;
 };
 
 std::ostream& operator <<(std::ostream& os, const Facette& f) {
@@ -459,6 +465,7 @@ int Unfold::pieceNextID() {
 }
 
 void Unfold::unfolding() {
+    int xMax = 0;
     for(int nG = 0; nG <(int)groups.size(); nG++) {
         Facette* prochainLibre;
         do {
@@ -504,6 +511,8 @@ void Unfold::unfolding() {
                     }
                 }while(ok);
 
+                piece.O.setX(xMax);
+                xMax += piece.pMax.x();
                 page.ajoutePiece(piece);
                 pages.push_back(page);
             }
@@ -531,6 +540,7 @@ Unfold::Unfold(std::string fOBJ, std::string fDAT, std::string fSVG,
     QGraphicsView* vue, QSlider* slider) :
     fnOBJ(fOBJ), fnDAT(fDAT), fnSVG(fSVG), rVue(vue), rSlider(slider) {
 
+    deja = false;
     load_OBJ();
     init_triangles();
     calc_neighbourhood();
@@ -651,15 +661,48 @@ Edge* Unfold::edgeGet(int fid, int nid) {
     return nullptr;
 }
 
-void Unfold::rotatePieceCourante(int value) {
+void Unfold::rotatePieceCourante(int value, int delta) {
     Piece * piece = getPieceCourante();
     if (piece) {
+        if (delta != 0)
+            value = piece->a + delta;
+
         piece->a = value;
         titleItem->setRotation(value);
     }
 }
 
+void Unfold::deplacePieceCourante(int deltaX, int deltaY) {
+    Piece * piece = getPieceCourante();
+    if (piece) {
+        piece->O.setX(piece->O.x() + deltaX);
+        piece->O.setY(piece->O.y() + deltaY);
+
+        displayUI();
+    }
+}
+
 void Unfold::displayUI() {
+    //if (rVue->scene()) {
+    if (deja) {
+        for (auto&& it : rVue->scene()->items()) {
+            if (it->flags() && QGraphicsItem::ItemIsMovable) {
+                TitleItem* ti = static_cast<TitleItem*>(it);
+                Piece* pi = getPiece(ti->data(0).toInt());
+                if (pi) {
+                    pi->O = QVector2D(
+                        pi->O.x() - ti->data(1).toFloat() + ti->pos().x(),
+                        pi->O.y() - ti->data(2).toFloat() + ti->pos().y()
+                    );
+                    if (pi->O.y() < 0)
+                        pi->O.setY(0);
+                }
+            }
+        }
+    } else {
+        deja = true;
+    }
+
     QGraphicsScene* scene = new QGraphicsScene;
     int dxP = 0;
     QFont fEdges("Courier", 9);
@@ -671,17 +714,20 @@ void Unfold::displayUI() {
             std::vector<sedge> pedges;
             TitleItem *tit = new TitleItem(QString::number(piece.id+1), this);
             tit->setRotation(piece.a);
-            tit->setData(0, 123);
+            tit->setData(0, piece.id);
             scene->addItem(tit);
             bool hasLabel = false;
 
             QVector2D cTIT;
             for (auto&& fn : piece.faceId) {
-                Triangle2d tt = cmpo(facettes[fn].triangle + piece.O + QVector2D(dxP+5, 5));
-                if (!hasLabel){
+                //Triangle2d tt = cmpo(facettes[fn].triangle + piece.O + QVector2D(dxP+5, 5));
+                Triangle2d tt = cmpo(facettes[fn].triangle) + piece.O ;//QVector2D(0*dxP+5, 5));
+                if (!hasLabel){                  
                     QVector2D b = QVector2D(tit->boundingRect().width(), tit->boundingRect().height()) / 2;
                     cTIT = tt.centroid() - b;
                     tit->setPos(cTIT.x(), cTIT.y());
+                    tit->setData(1, cTIT.x());
+                    tit->setData(2, cTIT.y());
                     hasLabel = true;
                 }
 
@@ -732,7 +778,8 @@ void Unfold::displayUI() {
                     li->setData(1, e.fid);
                     li->setData(2, e.nF);
 
-                    QGraphicsSimpleTextItem *ti = scene->addSimpleText(QString::number(edgeGet(e.nF, e.fid)->nO), fEdges);
+                    //QGraphicsSimpleTextItem *ti = scene->addSimpleText(QString::number(edgeGet(e.nF, e.fid)->nO), fEdges);
+                    QGraphicsSimpleTextItem *ti = scene->addSimpleText(QString::number(edgeGet(e.nF, e.fid)->nE), fEdges);
                     QVector2D b = QVector2D(ti->boundingRect().width()/2, ti->boundingRect().height());
                     ti->setTransformOriginPoint(b.x(),  b.y());
                     double ra = angle(e.p1, e.p2) - std::numbers::pi;
@@ -870,7 +917,6 @@ void Unfold::stickPiece(int a, int b) {
         facOrig = facettes[an.orig];
         std::cout << facettes[an.id] << std::endl;
         Neighbor *n = facOrig.findNeighbor(an.id);
-        facettes[an.id].triangle = t2d[an.id];
         facettes[an.id].triangle +=
             facOrig.triangle.point(n->id) - facettes[an.id].triangle.point(n->idx);
         double angle = calc_angle(
@@ -887,6 +933,21 @@ void Unfold::stickPiece(int a, int b) {
             break;
         }
       }
+
+      // recalcule les mins et maxs
+      /*for (auto&& pg : pages) {
+        for (auto&& pi : pg.pieces) {
+            for (auto&& i : pi.faceId) {
+                Triangle2d t = facettes[i].triangle;
+                for (int j= 0; i < 3; j++) {
+                    if (pi.pMin.x() > t.point(j).x()) pi.pMin.setX(t.point(j).x());
+                    if (pi.pMin.y() > t.point(j).y()) pi.pMin.setY(t.point(j).y());
+                    if (pi.pMax.x() < t.point(j).x()) pi.pMax.setX(t.point(j).x());
+                    if (pi.pMax.y() < t.point(j).y()) pi.pMax.setY(t.point(j).y());
+                }
+            }
+        }
+      }*/
       reajuste_pieces();
       displayUI();
     }
@@ -894,12 +955,10 @@ void Unfold::stickPiece(int a, int b) {
 
 void Unfold::splitPiece(int a, int b) {
     qInfo("splitPiece %d %d", a, b);
-    qInfo() << a;
-    qInfo() << b;
+    //qInfo() << a;
+    //qInfo() << b;
 
     Facette* fA = getFacette(a);
-    //Facette* fB = getFacette(b);
-    //Piece* pieceA = getPiece(fA->piece);
 
     std::vector<fct> pool;
     std::vector<fct> newP;
@@ -917,9 +976,9 @@ void Unfold::splitPiece(int a, int b) {
         }
     }
 
-    std::cout << "FACETTES A TESTER" << std::endl;
-    for (auto&& p : pool )
-        std::cout << p.pose << " " << p.id << " " << p.orig << std::endl;
+    //std::cout << "FACETTES A TESTER" << std::endl;
+    //for (auto&& p : pool )
+    //    std::cout << p.pose << " " << p.id << " " << p.orig << std::endl;
 
     bool ok = false;
     do {
@@ -946,17 +1005,16 @@ void Unfold::splitPiece(int a, int b) {
         }
     } while (ok);
 
-    std::cout << "FACETTES DEPLACEES" << std::endl;
-    for (auto&& p : newP )
-        std::cout << p.pose << " " << p.id << " " << p.orig << std::endl;
+    //std::cout << "FACETTES DEPLACEES" << std::endl;
+    //for (auto&& p : newP )
+    //    std::cout << p.pose << " " << p.id << " " << p.orig << std::endl;
 
     int nPiece = pieceNextID();
     Piece* pieceA = getPiece(fA->piece);
     Piece nP = Piece(nPiece);
-    QVector2D delta = (facettes[b].triangle.centroid() + fA->triangle.centroid()) / 5;
+    nP.O = QVector2D(0,0);
 
     for (auto&& p : newP ) {
-        facettes[p.id].triangle += delta;
         nP.ajouteFace(facettes[p.id], p.orig, fA->page, nPiece);
 
         for (size_t i = 0 ; i < pieceA->faceId.size(); i++) {
