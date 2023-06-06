@@ -13,7 +13,7 @@ public :
     QVector2D pMin;  // Biggest coordinates
     QVector2D pMax;  // Smallest coordinates
     QVector2D O;     // Origin
-    double a;   // rotation angle
+    //double a;   // rotation angle
     std::vector<int> faceId;
 
     Piece();

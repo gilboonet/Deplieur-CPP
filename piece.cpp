@@ -3,7 +3,7 @@
 
 Piece::Piece() {}
 Piece::Piece(int pid) :
-    id(pid), pMin(QVector2D(dMax, dMax)), pMax(QVector2D(dMin, dMin)), O(QVector2D(0.0, 0.0)), a(0.0) {}
+    id(pid), pMin(QVector2D(dMax, dMax)), pMax(QVector2D(dMin, dMin)), O(QVector2D(0.0, 0.0)) {}
 
 void Piece::recadre(const Triangle2d& tr) {
     Triangle2d t = tr;

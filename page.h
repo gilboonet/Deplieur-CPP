@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "piece.h"
-#include "rotationslider.h"
 
 class Page {
 public :

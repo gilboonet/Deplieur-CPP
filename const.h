@@ -13,7 +13,7 @@ struct sedge {
     int nb;
 };
 
-const double epsilon = 0.5;
+const double epsilon = 4;
 const double dMin = -999999;
 const double dMax =  999999;
 
@@ -33,6 +33,6 @@ QVector2D   middle (QVector2D, QVector2D);
 double      distance(const QVector2D& v1, const QVector2D& v2);
 double      angle(const QVector2D&, const QVector2D& p);
 QVector2D   rotatePt(const QVector2D& v, const QVector2D& c, const double a);
-
+double      direction (const QVector2D&, const QVector2D&);
 
 #endif // CONST_H

@@ -74,3 +74,8 @@ QVector2D rotatePt(const QVector2D& v, const QVector2D& c, const double a) {
     );
     return r;
 }
+
+double direction(const QVector2D& p1, const QVector2D& p2) {
+    return atan2(p2.y() - p1.y(), p2.x() - p1.x());
+}
+

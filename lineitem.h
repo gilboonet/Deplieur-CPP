@@ -1,6 +1,7 @@
 #ifndef LINEITEM_H
 #define LINEITEM_H
 
+#include "titleitem.h"
 #include "unfold.h"
 
 #include <QGraphicsLineItem>

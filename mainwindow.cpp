@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "lineitem.h"
 
+#include <QActionGroup>
 #include <QFileDialog>
 #include <QString>
 #include <QFile>
@@ -21,12 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionSauver, &QAction::triggered, this, &MainWindow::sauver);
     connect(ui->actionQuitter, &QAction::triggered, this, &MainWindow::quitter);
 
-    connect(ui->hSlider, &QSlider::valueChanged, this, &MainWindow::sliderValueChanged);
-
     connect(ui->actionZoom_Normal, &QAction::triggered, this, &MainWindow::zoomNormal);
     connect(ui->actionZoom_Plus, &QAction::triggered, this, &MainWindow::zoomPlus);
     connect(ui->actionZoom_Moins, &QAction::triggered, this, &MainWindow::zoomMoins);
 
+    connect(ui->actionTourner_1_Droite, &QAction::triggered, this, &MainWindow::tournerD);
+    connect(ui->actionTourner_1_Gauche, &QAction::triggered, this, &MainWindow::tournerG);
     connect(ui->actionTourner_5_Droite, &QAction::triggered, this, &MainWindow::tournerD05);
     connect(ui->actionTourner_5_Gauche, &QAction::triggered, this, &MainWindow::tournerG05);
     connect(ui->actionTourner_15_Droite, &QAction::triggered, this, &MainWindow::tournerD15);
@@ -36,12 +37,121 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionDescendre, &QAction::triggered, this, &MainWindow::descendre);
     connect(ui->actionGauche, &QAction::triggered, this, &MainWindow::gauche);
     connect(ui->actionDroite, &QAction::triggered, this, &MainWindow::droite);
+
+    connect(ui->actionOptimiser_num, &QAction::toggled, this, &MainWindow::basculerOptimiserNums);
+
+    QActionGroup* PageFormatGroup = new QActionGroup(this);
+    PageFormatGroup->addAction(ui->actionA3);
+    PageFormatGroup->addAction(ui->actionA4);
+    PageFormatGroup->addAction(ui->actionA5);
+    PageFormatGroup->addAction(ui->actionCr1);
+    PageFormatGroup->addAction(ui->actionCr2);
+    PageFormatGroup->addAction(ui->actionCr3);
+    PageFormatGroup->addAction(ui->actionCr4);
+    ui->actionA4->setChecked(true);
+
+    connect(ui->actionA3, &QAction::toggled, this, &MainWindow::pageFormat_A3);
+    connect(ui->actionA4, &QAction::toggled, this, &MainWindow::pageFormat_A4);
+    connect(ui->actionA5, &QAction::toggled, this, &MainWindow::pageFormat_A5);
+    connect(ui->actionCr1, &QAction::toggled, this, &MainWindow::pageFormat_Cr1);
+    connect(ui->actionCr2, &QAction::toggled, this, &MainWindow::pageFormat_Cr2);
+    connect(ui->actionCr3, &QAction::toggled, this, &MainWindow::pageFormat_Cr3);
+    connect(ui->actionCr4, &QAction::toggled, this, &MainWindow::pageFormat_Cr4);
+
+    QActionGroup* ModeLanguettesGroup = new QActionGroup(this);
+    ModeLanguettesGroup->addAction(ui->actionLang0);
+    ModeLanguettesGroup->addAction(ui->actionLang1);
+    ModeLanguettesGroup->addAction(ui->actionLang2);
+    ui->actionLang0->setChecked(true);
+
+    connect(ui->actionLang0, &QAction::toggled, this, &MainWindow::langMode0);
+    connect(ui->actionLang1, &QAction::toggled, this, &MainWindow::langMode1);
+    connect(ui->actionLang2, &QAction::toggled, this, &MainWindow::langMode2);
+
+    ui->menuAffichage->setEnabled(false);
+    ui->menuGabarit->setEnabled(false);
+    ui->menuPiece->setEnabled(false);
+
+    QActionGroup* HLanguettesGroup = new QActionGroup(this);
+    HLanguettesGroup->addAction(ui->actHL_11);
+    HLanguettesGroup->addAction(ui->actHL_12);
+    HLanguettesGroup->addAction(ui->actHL_13);
+    HLanguettesGroup->addAction(ui->actHL_14);
+    HLanguettesGroup->addAction(ui->actHL_15);
+    HLanguettesGroup->addAction(ui->actHL_16);
+    HLanguettesGroup->addAction(ui->actHL_17);
+    HLanguettesGroup->addAction(ui->actHL_18);
+    HLanguettesGroup->addAction(ui->actHL_19);
+    HLanguettesGroup->addAction(ui->actHL_20);
+
+    ui->actHL_15->setChecked(true);
+
+    connect(ui->actHL_11, &QAction::toggled, this, &MainWindow::langH11);
+    connect(ui->actHL_12, &QAction::toggled, this, &MainWindow::langH12);
+    connect(ui->actHL_13, &QAction::toggled, this, &MainWindow::langH13);
+    connect(ui->actHL_14, &QAction::toggled, this, &MainWindow::langH14);
+    connect(ui->actHL_15, &QAction::toggled, this, &MainWindow::langH15);
+    connect(ui->actHL_16, &QAction::toggled, this, &MainWindow::langH16);
+    connect(ui->actHL_17, &QAction::toggled, this, &MainWindow::langH17);
+    connect(ui->actHL_18, &QAction::toggled, this, &MainWindow::langH18);
+    connect(ui->actHL_19, &QAction::toggled, this, &MainWindow::langH19);
+    connect(ui->actHL_20, &QAction::toggled, this, &MainWindow::langH20);
 }
 
 MainWindow::~MainWindow()
 {
     free(unfold);
     delete ui;
+}
+
+void MainWindow::langH11() { langHSet(11); }
+void MainWindow::langH12() { langHSet(12); }
+void MainWindow::langH13() { langHSet(13); }
+void MainWindow::langH14() { langHSet(14); }
+void MainWindow::langH15() { langHSet(15); }
+void MainWindow::langH16() { langHSet(16); }
+void MainWindow::langH17() { langHSet(17); }
+void MainWindow::langH18() { langHSet(18); }
+void MainWindow::langH19() { langHSet(19); }
+void MainWindow::langH20() { langHSet(20); }
+
+void MainWindow::langHSet(int h) {
+    unfold->hLanguettes = h;
+    unfold->displayUI();
+}
+
+void MainWindow::langMode0() { langModeSet(0); }
+void MainWindow::langMode1() { langModeSet(1); }
+void MainWindow::langMode2() { langModeSet(2); }
+
+void MainWindow::langModeSet(int mode) {
+    unfold->modeLanguettes = mode;
+    unfold->init_flaps();
+    unfold->displayUI();
+}
+
+void MainWindow::pageFormat_A3() { pageFormat(297, 420); }
+void MainWindow::pageFormat_A4() { pageFormat(210, 297); }
+void MainWindow::pageFormat_A5() { pageFormat(148.5, 210); }
+void MainWindow::pageFormat_Cr1() { pageFormat(305, 610); }
+void MainWindow::pageFormat_Cr2() { pageFormat(305, 305); }
+void MainWindow::pageFormat_Cr3() { pageFormat(115, 305); }
+void MainWindow::pageFormat_Cr4() { pageFormat(115, 165); }
+
+void MainWindow::pageFormat(float x, float y) {
+    if (unfold) {
+        unfold->pageDim = QVector2D(x, y);
+        unfold->displayUI();
+    }
+}
+
+void MainWindow::basculerOptimiserNums()
+{
+    if (unfold) {
+        unfold->optimiserNums = !unfold->optimiserNums;
+        unfold->recalculeNums();
+        unfold->displayUI();
+    }
 }
 
 void MainWindow::quitter()
@@ -57,10 +167,12 @@ void MainWindow::nouveau()
         return;
     }
 
-    unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView, ui->hSlider);
+    unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView);
+    pageFormat_A4();
     unfold->unfolding();
+    unfold->init_flaps();
     unfold->displayUI();
-
+    unlockMenus();
 }
 
 void MainWindow::ouvrir()
@@ -91,30 +203,63 @@ void MainWindow::ouvrir()
     qInfo() << "OBJ : " << obj;
     qInfo() << "SVG : " << svg;
 
-    unfold = new Unfold(obj.toStdString(), dat.toStdString(), svg.toStdString(), ui->graphicsView, ui->hSlider);
+    unfold = new Unfold(obj.toStdString(), dat.toStdString(), svg.toStdString(), ui->graphicsView);
+    pageFormat_A4();
+    unlockMenus();
     unfold->load_DAT();
+    switch(unfold->modeLanguettes) {
+        case 0 : ui->actionLang0->setChecked(true); break;
+        case 1 : ui->actionLang1->setChecked(true); break;
+        case 2 : ui->actionLang2->setChecked(true);
+    }
+
     unfold->displayUI();
 }
 
-void MainWindow::sliderValueChanged(int value)
-{
-    unfold->rotatePieceCourante(value);
+void MainWindow::sauver() {
+    if (unfold) {
+        QString dat = QFileDialog::getSaveFileName(this, "Sauver le dépliage", "", "Depliage (*.dat)");
+        if (dat.isNull()) {
+            return;
+        }
+
+        unfold->syncUI();
+        std::ofstream sauveDat(dat.toStdString());
+        unfold->display_unfold(sauveDat);
+        sauveDat.close();
+    }
 }
 
+void MainWindow::unlockMenus()
+{
+    ui->menuAffichage->setEnabled(true);
+    ui->menuGabarit->setEnabled(true);
+    ui->menuPiece->setEnabled(true);
+}
+
+void MainWindow::tournerD() {
+    unfold->rotatePieceCourante(-1);
+}
+
+void MainWindow::tournerG() {
+    unfold->rotatePieceCourante(1);
+}
+
+
 void MainWindow::tournerD05() {
-    unfold->rotatePieceCourante(0, 5);
+    unfold->rotatePieceCourante(-5);
 }
 
 void MainWindow::tournerG05() {
-    unfold->rotatePieceCourante(0, -5);
+    unfold->rotatePieceCourante(5);
 }
 
 void MainWindow::tournerD15() {
-    unfold->rotatePieceCourante(0, 15);
+    unfold->rotatePieceCourante(-15);
 }
 
 void MainWindow::tournerG15() {
-    unfold->rotatePieceCourante(0, -15);
+    unfold->rotatePieceCourante(15);
 }
 
 void MainWindow::monter() {
@@ -144,16 +289,4 @@ void MainWindow::zoomPlus() {
 
 void MainWindow::zoomMoins() {
     ui->graphicsView->scale(0.8, 0.8);
-}
-
-void MainWindow::sauver() {
-    QString dat = QFileDialog::getSaveFileName(this, "Sauver le dépliage", "", "Depliage (*.dat)");
-    if (dat.isNull()) {
-        return;
-    }
-
-    unfold->displayUI();
-    std::ofstream sauveDat(dat.toStdString());
-    unfold->display_unfold(sauveDat);
-    sauveDat.close();
 }

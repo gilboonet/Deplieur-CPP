@@ -1,23 +1,23 @@
 #ifndef UNFOLD_H
 #define UNFOLD_H
 
-#include <vector>
-#include <array>
-#include <string>
-#include <iostream>
-#include <fstream>
 #include <algorithm>
-#include <sstream>
+#include <array>
 #include <cmath>
+#include <fstream>
+#include <functional>
+#include <iostream>
 #include <numbers>
 #include <ostream>
-#include <functional>
-#include <QString>
-#include <QGraphicsView>
 #include <QGraphicsSimpleTextItem>
-
-#include <QVector3D>
+#include <QGraphicsView>
+#include <QString>
 #include <QVector2D>
+#include <QVector3D>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "triangle2d.h"
 #include "triangle3d.h"
 #include "neighbor.h"
@@ -27,7 +27,7 @@
 #include "const.h"
 #include "piece.h"
 #include "page.h"
-//#include "titleitem.h"
+#include "flap.h"
 #include "../svg.hpp"
 
 class TitleItem;
@@ -52,6 +52,7 @@ private :
     std::vector<Triangle2d>             t2d;
     std::vector<std::array<Neighbor, 3>> neighbors;
     std::vector<Edge>                   edges;
+    std::vector<Flap>                   flaps;
     std::vector<Copl>                   copl;
     int                                 nbFaces;
     std::vector<Facette>                facettes;
@@ -77,23 +78,33 @@ private :
 
 public :
     Unfold();
-    Unfold(std::string, std::string, std::string, QGraphicsView*, QSlider*);
+    Unfold(std::string, std::string, std::string, QGraphicsView*);
 
     std::vector<Page>       pages;
     QGraphicsView*          rVue;
-    QSlider*                rSlider;
+    QGraphicsLineItem*      flash;
     bool                    deja;
+    bool                    optimiserNums;
     TitleItem*              titleItem;
     int                     IdPieceCourante;
+    QVector2D               pageDim;
+    int                     modeLanguettes; // 0:sans 1:1/paire 2:toutes
+    int                     hLanguettes; // 15 par défaut
     void                    display_unfold(std::ostream &);
     void                    display_facettes(std::ostream&);
     void                    load_DAT();
+
     static  QVector3D       read_points(std::string);
     static  std::vector<int> read_faces(std::string, int);
     static  Page            read_page(std::string);
     static  Piece           read_piece(std::string);
+    static  Facette         read_Premfacette(std::string);
     static  Facette         read_facette(std::string);
+    static  Flap            read_flap(std::string);
+    void                    read_langMode(std::string);
+
     void                    init_unfolding();
+    void                    init_flaps();
     int                     pieceNextID();
     void                    unfolding();
     int                     getNbFaces();
@@ -101,6 +112,7 @@ public :
     void                    create_SVG(std::string);
     void                    create_SVG(QString);
     void                    displayUI();
+    void                    syncUI();
     void                    reajuste_pieces();
     Copl*                   getCopl(int, int);
     Facette*                getFacette(const int);
@@ -108,10 +120,13 @@ public :
     void                    setPieceCourante(const int, TitleItem*);
     Page*                   getPage(const int);
     Piece*                  getPiece(const int);
-    void                    rotatePieceCourante(int, int = 0);
+    Flap*                   getFlap(const int, const int);
+    void                    rotatePieceCourante(int);
     void                    deplacePieceCourante(int, int);
     void                    stickPiece(int, int);
     void                    splitPiece(int, int);
+    void                    recalculeNums();
+    void                    changeLanguette(int, int);
 };
 
 std::ostream& operator <<(std::ostream& os, const QVector2D& v);

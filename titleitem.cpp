@@ -26,7 +26,7 @@ TitleItem::TitleItem(const QString text, Unfold *d) :
 
 }
 
-void TitleItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
+void TitleItem::mousePressEvent(QGraphicsSceneMouseEvent *)
 {
     int n = text().toInt()-1;
     donnees->setPieceCourante(n, this);
@@ -42,11 +42,6 @@ void TitleItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         }
         if (pageCourante)
             break;
-    }
-
-    if (pageCourante && pieceCourante) {
-        donnees->rSlider->setEnabled(true);
-        donnees->rSlider->setValue(pieceCourante->a);
     }
 }
 

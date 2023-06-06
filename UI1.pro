@@ -13,13 +13,14 @@ SOURCES += \
     copl.cpp \
     edge.cpp \
     facette.cpp \
+    flap.cpp \
     lineitem.cpp \
     main.cpp \
     mainwindow.cpp \
     neighbor.cpp \
+    numitem.cpp \
     page.cpp \
     piece.cpp \
-    rotationslider.cpp \
     titleitem.cpp \
     triangle2d.cpp \
     triangle3d.cpp \
@@ -30,12 +31,13 @@ HEADERS += \
     copl.h \
     edge.h \
     facette.h \
+    flap.h \
     lineitem.h \
     mainwindow.h \
     neighbor.h \
+    numitem.h \
     page.h \
     piece.h \
-    rotationslider.h \
     titleitem.h \
     triangle2d.h \
     triangle3d.h \

@@ -12,7 +12,5 @@ public :
     Copl(int, int, int);
 };
 
-Copl* getCopl(int F, int V);
-
 
 #endif // COPL_H

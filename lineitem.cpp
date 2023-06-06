@@ -1,5 +1,4 @@
 #include "lineitem.h"
-#include "titleitem.h"
 
 #include <QPen>
 
@@ -66,12 +65,33 @@ void LineItem::setCustomPen() {
 
 void LineItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
 {
+    int a = data(1).toInt();
+    int b = data(2).toInt();
+
+    TitleItem * ti = static_cast<TitleItem*>(parentItem());
+    if (!ti->donnees->flash)
+        return;
+
+    QPointF p1, p2;
+    p1 = line().center() + parentItem()->pos();
+    for (auto&& it : scene()->items()) {
+        if ((it->data(1).toInt() == b) && (it->data(2).toInt() == a)) {
+            QGraphicsLineItem* l2 = static_cast<QGraphicsLineItem*>(it);
+            p2 = l2->line().center() + l2->parentItem()->pos();
+            ti->donnees->flash->setLine(QLineF(p1, p2));
+            ti->donnees->flash->setVisible(true);
+            break;
+        }
+    }
     setPen(QPen(Qt::yellow, 2));
 }
 
 void LineItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 {
     setCustomPen();
+    TitleItem * ti = static_cast<TitleItem*>(parentItem());
+    if (ti->donnees->flash)
+        ti->donnees->flash->setVisible(false);
 }
 
 void LineItem::mousePressEvent(QGraphicsSceneMouseEvent *)
