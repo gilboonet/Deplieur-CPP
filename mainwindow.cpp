@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionNouveau, &QAction::triggered, this, &MainWindow::nouveau);
     connect(ui->actionSauver, &QAction::triggered, this, &MainWindow::sauver);
     connect(ui->actionQuitter, &QAction::triggered, this, &MainWindow::quitter);
+    connect(ui->actionExporter, &QAction::triggered, this, &MainWindow::exporterSVG);
 
     connect(ui->actionZoom_Normal, &QAction::triggered, this, &MainWindow::zoomNormal);
     connect(ui->actionZoom_Plus, &QAction::triggered, this, &MainWindow::zoomPlus);
@@ -227,6 +228,18 @@ void MainWindow::sauver() {
         std::ofstream sauveDat(dat.toStdString());
         unfold->display_unfold(sauveDat);
         sauveDat.close();
+    }
+}
+
+void MainWindow::exporterSVG() {
+    if (unfold) {
+        QString svg = QFileDialog::getSaveFileName(this, "Exporter le gabarit", "", "SVG (*.svg)");
+        if (svg.isNull()) {
+            return;
+        }
+
+        //unfold->syncUI();
+        unfold->displayUI(svg);
     }
 }
 

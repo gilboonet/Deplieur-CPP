@@ -13,7 +13,7 @@ struct sedge {
     int nb;
 };
 
-const double epsilon = 4;
+const double epsilon = 8;
 const double dMin = -999999;
 const double dMax =  999999;
 

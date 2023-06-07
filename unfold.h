@@ -111,7 +111,7 @@ public :
     void                    display();
     void                    create_SVG(std::string);
     void                    create_SVG(QString);
-    void                    displayUI();
+    void                    displayUI(QString = "");
     void                    syncUI();
     void                    reajuste_pieces();
     Copl*                   getCopl(int, int);

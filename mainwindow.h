@@ -22,6 +22,7 @@ private slots:
     void ouvrir();
     void sauver();
     void quitter();
+    void exporterSVG();
 
     void unlockMenus();
     void basculerOptimiserNums();
