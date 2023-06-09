@@ -15,7 +15,7 @@ public:
     QVector3D point(const int);
     Triangle2d d2ize();
     bool eq3(Triangle3d, int);
-    double isCoplanar(QVector3D);
+    float isCoplanar(QVector3D);
 };
 
 

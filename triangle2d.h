@@ -16,11 +16,11 @@ public:
     Triangle2d &operator +=(const QVector2D&);
     Triangle2d operator -(const QVector2D&);
     Triangle2d &operator -=(const QVector2D&);
-    Triangle2d operator *(const double&);
-    Triangle2d operator /(const double&);
+    Triangle2d operator *(const float&);
+    Triangle2d operator /(const float&);
 
     QVector2D point(const int);
-    Triangle2d& rotate(const QVector2D&, const double);
+    Triangle2d& rotate(const QVector2D&, const float);
     bool overlap(const Triangle2d&);
     QVector2D centroid();
 };

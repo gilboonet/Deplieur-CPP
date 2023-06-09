@@ -2,7 +2,6 @@
 #define CONST_H
 
 #include "triangle2d.h"
-#include "../svg.hpp"
 
 struct sedge {
     QVector2D p1;
@@ -13,26 +12,25 @@ struct sedge {
     int nb;
 };
 
-const double epsilon = 8;
-const double dMin = -999999;
-const double dMax =  999999;
+const float epsilon = 5;
+const float dMin = -999999;
+const float dMax =  999999;
 
 int         prev(const int);
 int         next(const int);
-double      calc_angle(QVector2D, QVector2D, QVector2D);
-double      radToDeg(double d);
-double      degToRad(double d);
-bool        eq(double a, double b);
+float       calc_angle(QVector2D, QVector2D, QVector2D);
+float       radToDeg(float d);
+float       degToRad(float d);
+bool        eq(float a, float b);
 bool        eq(QVector2D a, QVector2D b);
-int         sgn(double);
-double      cmpo(double);
+int         sgn(float);
+float       cmpo(float);
 QVector2D   cmpo(QVector2D v);
 Triangle2d  cmpo(Triangle2d t);
-SVG::Point  SVG_Point(QVector2D);
 QVector2D   middle (QVector2D, QVector2D);
-double      distance(const QVector2D& v1, const QVector2D& v2);
-double      angle(const QVector2D&, const QVector2D& p);
-QVector2D   rotatePt(const QVector2D& v, const QVector2D& c, const double a);
-double      direction (const QVector2D&, const QVector2D&);
+float       distance(const QVector2D& v1, const QVector2D& v2);
+float       angle(const QVector2D&, const QVector2D& p);
+QVector2D   rotatePt(const QVector2D& v, const QVector2D& c, const float a);
+float       direction (const QVector2D&, const QVector2D&);
 
 #endif // CONST_H

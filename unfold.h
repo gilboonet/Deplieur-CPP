@@ -109,8 +109,6 @@ public :
     void                    unfolding();
     int                     getNbFaces();
     void                    display();
-    void                    create_SVG(std::string);
-    void                    create_SVG(QString);
     void                    displayUI(QString = "");
     void                    syncUI();
     void                    reajuste_pieces();
@@ -127,6 +125,7 @@ public :
     void                    splitPiece(int, int);
     void                    recalculeNums();
     void                    changeLanguette(int, int);
+    void                    reducePages();
 };
 
 std::ostream& operator <<(std::ostream& os, const QVector2D& v);

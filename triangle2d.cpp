@@ -26,15 +26,15 @@ Triangle2d& Triangle2d::operator -=(const QVector2D& v) {
     return *this;
 }
 
-Triangle2d Triangle2d::operator *(const double& v) {
+Triangle2d Triangle2d::operator *(const float& v) {
     return Triangle2d(QVector2D(a * v), QVector2D(b * v), QVector2D(c * v));
 }
 
-Triangle2d Triangle2d::operator /(const double& v) {
+Triangle2d Triangle2d::operator /(const float& v) {
     return Triangle2d(QVector2D(a / v), QVector2D(b / v), QVector2D(c / v));
 }
 
-Triangle2d& Triangle2d::rotate(const QVector2D& C, const double angle) {
+Triangle2d& Triangle2d::rotate(const QVector2D& C, const float angle) {
     *this = Triangle2d(rotatePt(a, C, angle), rotatePt(b, C, angle), rotatePt(c, C, angle));
     return *this;
 }
@@ -46,13 +46,13 @@ bool li(QVector2D l1S, QVector2D l1E, QVector2D l2S, QVector2D l2E) {
         return 0;
     }
 
-    double denominator =((l2E.y() - l2S.y()) *(l1E.x() - l1S.x()))
+    float denominator =((l2E.y() - l2S.y()) *(l1E.x() - l1S.x()))
                          -((l2E.x() - l2S.x()) *(l1E.y() - l1S.y()));
 
     if(denominator == 0)
         return 0;
 
-    double
+    float
         a = l1S.y() - l2S.y(),
         b = l1S.x() - l2S.x(),
         numerator1 =((l2E.x() - l2S.x()) * a) -((l2E.y() - l2S.y()) * b),

@@ -260,7 +260,7 @@ void Unfold::load_DAT() {
                 facette.triangle += triOrig.point(n->id)
                     - facette.triangle.point(n->idx);
 
-                double angle = calc_angle(
+                float angle = calc_angle(
                     triOrig.point(n->id),
                     triOrig.point(next(n->id)),
                     facette.triangle.point(prev(n->idx)));
@@ -337,6 +337,16 @@ void Unfold::setPieceCourante(const int id, TitleItem *ti) {
     IdPieceCourante = id;
     titleItem = ti;
 };
+
+void Unfold::reducePages() {
+    for (auto&& pg : pages) {
+        for (auto&& pi : pg.pieces) {
+            QVector2D c = pi.O + (pi.pMax - pi.pMin);
+            int p = c.x() / cmpo(pageDim.x());
+            qInfo() << "piece " << (pi.id+1) << " " << p;
+        }
+    }
+}
 
 void Unfold::display_facettes(std::ostream &os) {
     os << "FICHIER OBJ : " << fnOBJ << std::endl;
@@ -580,7 +590,7 @@ void Unfold::unfolding() {
                                 facettes[fv.nF].triangle += fr.triangle.point(fv.id)
                                                            - facettes[fv.nF].triangle.point(fv.idx);
                                 // tourner
-                                double angle = calc_angle(
+                                float angle = calc_angle(
                                     fr.triangle.point(fv.id),
                                     fr.triangle.point(next(fv.id)),
                                     facettes[fv.nF].triangle.point(prev(fv.idx))
@@ -605,8 +615,9 @@ void Unfold::unfolding() {
                     }
                 }while(ok);
 
+                //qInfo() << piece.pMax.x() - piece.pMin.x();
                 piece.O.setX(xMax);
-                xMax += cmpo(50);//piece.pMax.x();
+                xMax += cmpo(piece.pMax.x() - piece.pMin.x()+1);
                 page.ajoutePiece(piece);
                 pages.push_back(page);
             }
@@ -646,110 +657,6 @@ Unfold::Unfold(std::string fOBJ, std::string fDAT, std::string fSVG,
     init_unfolding();
 }
 
-void Unfold::create_SVG(std::string fichier) {
-    SVG::SVG root;
-    root.set_attr("width", "210");
-    root.set_attr("height", "297");
-    root.set_attr("viewBox", "0 0 210 297");
-
-    // Basic CSS support
-    root.style("line").set_attr("fill", "none").set_attr("stroke-width", "0.15mm");
-    root.style("line.C").set_attr("stroke", "red");
-    root.style("line.M").set_attr("stroke", "brown")
-        .set_attr("stroke-dasharray", "4");
-    root.style("line.V").set_attr("stroke", "green")
-        .set_attr("stroke-dasharray", "4 1 1 1");
-
-    root.style("text").set_attr("text-anchor", "middle")
-        .set_attr("dominant-baseline", "middle");
-
-    root.style("text.T").set_attr("fill", "blue").set_attr("font-size", "4px");
-    root.style("text.E").set_attr("fill", "black").set_attr("font-size", "3px");
-    root.style("text.p").set_attr("fill", "Indigo").set_attr("font-size", "8px");
-
-    std::vector<SVG::Text*> txts;
-    std::vector<SVG::Line*> lines;
-
-    int deltaP = 0;
-    for(auto&& pg : pages) {
-        for(auto&& pi : pg.pieces) {
-            std::vector<sedge> edges;
-            auto shapes = root.add_child<SVG::Group>();
-            QVector2D total = QVector2D(0.0, 0.0);
-            for(auto&& fid : pi.faceId) {
-                Triangle2d tt = facettes[fid].triangle + QVector2D(deltaP, 0) + pi.O;
-                total += tt.centroid();
-
-                // facette's #
-                SVG::Text* txt = shapes->add_child<SVG::Text>(
-                    SVG_Point(tt.centroid()), std::to_string(fid));
-                txt->set_attr("class", "T");
-                txts.push_back(txt);
-
-                // facette's edges and neighbors #
-                for (int i = 0; i < 3; i++) {
-                    bool ok = true;
-                    QVector2D p1 = tt.point(i),
-                              p2 = tt.point(next(i));
-                    for (auto&& e: edges) {
-                        if (((e.p1 == p1) && (e.p2 == p2))
-                         || ((e.p1 == p2) && (e.p2 == p1))) {
-                            e.nb++;
-                            ok = false;
-                            break;
-                        }
-                    }
-                    if (ok) {
-                        sedge edge;
-                        edge.p1 = p1;
-                        edge.p2 = p2;
-                        edge.fid = fid;
-                        edge.nid = i;
-                        edge.nF = facettes[fid].neighbors[i].nF;
-                        edge.nb = 1;
-                        edges.push_back(edge);
-                    }
-                }
-            }
-
-            for (auto&& e:edges) {
-                SVG::Line* line = shapes->add_child<SVG::Line>(
-                    SVG_Point(e.p1), SVG_Point(e.p2));
-                if (e.nb == 1) {
-                    line->set_attr("class", "C");
-
-                    QVector2D m = middle(e.p1, e.p2);
-                    double ra = angle(e.p1, e.p2) - std::numbers::pi;
-                    SVG::Text* txt = shapes->add_child<SVG::Text>(
-                        0, -1, std::to_string(e.nF));
-                    std::string rs ="translate (" + std::to_string(m.x())
-                        + " " + std::to_string(m.y()) + ")"
-                        + " rotate (" + std::to_string(radToDeg(ra)) + ")";
-                    txt->set_attr("transform", rs);
-                    txt->set_attr("class", "E");
-                    txts.push_back(txt);
-                } else {
-                    int c = facettes[e.fid].findNeighbor(e.nF)->cop;
-                    line->set_attr("class", c < 0 ? "V" : "M");
-                }
-                lines.push_back(line);
-            }
-            total = total / pi.faceId.size();
-            SVG::Text* txt = shapes->add_child<SVG::Text>(total.x(), total.y(), std::to_string(pi.id));
-            txt->set_attr("class", "p");
-            txts.push_back(txt);
-        }
-        deltaP += pageDim.x() + 10;
-    }
-
-    std::ofstream outfile(fichier);
-    outfile << std::string(root);
-}
-
-void Unfold::create_SVG(QString f) {
-    create_SVG(f.toStdString());
-}
-
 Edge* Unfold::edgeGet(int fid, int nid) {
     for (auto&& e : edges) {
         if (e == Edge(fid, nid))
@@ -780,7 +687,7 @@ void Unfold::rotatePieceCourante(int delta) {
             facette.triangle += triOrig.point(n->id)
                 - facette.triangle.point(n->idx);
 
-            double angle = calc_angle(
+            float angle = calc_angle(
                 triOrig.point(n->id),
                 triOrig.point(next(n->id)),
                 facette.triangle.point(prev(n->idx)));
@@ -835,15 +742,13 @@ void Unfold::displayUI(QString svg) {
     QSvgGenerator sortieSVG;
     QFont fTitre, fNum;
     QPen pTitre, pNum;
-    QPainterPath lPath;//, borderPath;
+    QPainterPath lPath;
 
     if (!svg.isEmpty()) {
         doSVG = true;
         sortieSVG.setFileName(svg);
-        //temp_img.setSize(QSize(cmpo(pageDim.x()), cmpo(pageDim.y())));
 
         sortieSVG.setSize(QSize(pageDim.x(), pageDim.y()) *2.833);
-        //temp_img.setResolution(72);
         sortieSVG.setViewBox(QRect(0, 0, cmpo(pageDim.x()), cmpo(pageDim.y())));
         painter.begin(&sortieSVG);
         fTitre = QFont("Courier", 15);
@@ -877,26 +782,26 @@ void Unfold::displayUI(QString svg) {
             TitleItem *tit = new TitleItem(QString::number(piece.id+1), this);
             tit->setData(0, piece.id);
             scene->addItem(tit);
-            bool hasLabel = false;
+            // calcule emplacement au centre de la pièce
+            QVector2D cTIT{};
+            for (auto&& fn : piece.faceId)
+                cTIT += facettes[fn].triangle.centroid();
+            cTIT /= piece.faceId.size();
+            //bool hasLabel = false;
+            QVector2D tt = cmpo(cTIT) + piece.O + QVector2D(cmpo(5), cmpo(5));
+            QVector2D b = QVector2D(tit->boundingRect().width(), tit->boundingRect().height()) / 2;
+            cTIT = tt - b;
+            tit->setPos(cTIT.toPointF());
+            tit->setData(1, cTIT.x());
+            tit->setData(2, cTIT.y());
+            if (doSVG) {
+                painter.setFont(fTitre);
+                painter.setPen(pTitre);
+                painter.drawText(cTIT.toPointF(), QString::number(piece.id+1));
+            }
 
-            QVector2D cTIT;
             for (auto&& fn : piece.faceId) {
                 Triangle2d tt = cmpo(facettes[fn].triangle) + piece.O + QVector2D(cmpo(5), cmpo(5));
-                if (!hasLabel){                  
-                    QVector2D b = QVector2D(tit->boundingRect().width(), tit->boundingRect().height()) / 2;
-                    cTIT = tt.centroid() - b;
-                    //tit->setPos(cTIT.x(), cTIT.y());
-                    tit->setPos(cTIT.toPointF());
-                    tit->setData(1, cTIT.x());
-                    tit->setData(2, cTIT.y());
-                    if (doSVG) {
-                        painter.setFont(fTitre);
-                        painter.setPen(pTitre);
-                        painter.drawText(cTIT.toPointF(), QString::number(piece.id+1));
-                    }
-                    hasLabel = true;
-                }
-
                 for (int i = 0; i < 3 ; i++){
                     // facette's edges and neighbors #
                     int nF = facettes[fn].neighbors[i].nF;
@@ -965,7 +870,6 @@ void Unfold::displayUI(QString svg) {
                         li->setCustomPen();
                         if (doSVG) {
                             painter.setPen(li->pen());
-                            //painter.drawLine(e.p1.toPointF() + tit->pos(), e.p2.toPointF() +tit->pos());
                             painter.drawPath(lPath);
                         }
 
@@ -983,6 +887,7 @@ void Unfold::displayUI(QString svg) {
                         path.lineTo(P2.toPointF());
                         path.lineTo(e.p2.toPointF());
                         QGraphicsPathItem* pi = scene->addPath(path);
+                        pi->setZValue(0);
                         pi->setParentItem(tit);
                         pi->setPen(QPen(Qt::red, 2));
                         if (doSVG) {
@@ -998,7 +903,6 @@ void Unfold::displayUI(QString svg) {
                         li->setCustomPen();
                         if (doSVG) {
                             painter.setPen(li->pen());
-                            //painter.drawLine(e.p1.toPointF() + tit->pos(), e.p2.toPointF() +tit->pos());
                             painter.drawPath(lPath);
                         }
                     }
@@ -1009,10 +913,11 @@ void Unfold::displayUI(QString svg) {
                         NumItem *ti = new NumItem(QString::number(n), e.nF, e.fid);
                         QVector2D b = QVector2D(ti->boundingRect().width()/2, ti->boundingRect().height());
                         ti->setTransformOriginPoint(b.toPointF());
-                        double ra = angle(e.p1, e.p2) - std::numbers::pi;
+                        float ra = angle(e.p1, e.p2) - std::numbers::pi;
                         ti->setRotation(radToDeg(ra));
                         QVector2D c = middle(e.p1, e.p2) - b;
                         ti->setPos(c.toPointF());
+                        ti->setZValue(0);
                         ti->setParentItem(tit);
                         if (doSVG) {
                             painter.setFont(fNum);
@@ -1026,7 +931,6 @@ void Unfold::displayUI(QString svg) {
                     }
                 } else {
                     li->setLine(QLineF(e.p1.toPointF(), e.p2.toPointF()));
-                    //li->setLine(e.p1.x(), e.p1.y(), e.p2.x(), e.p2.y());
                     li->setTypeLigne(cop < 0 ? TL_LIE_V : (cop > 0) ? TL_LIE_M : TL_LIE_C);
                     li->setOutlineColor((cop < 0) ? Qt::green : (cop > 0) ? QColor(180,0,0) : QColor(240,240,240)); //Qt::lightGray);
                     li->setOutlineWidth(1);
@@ -1037,23 +941,22 @@ void Unfold::displayUI(QString svg) {
                     li->setData(2, e.nF);
                     if (doSVG) {
                         painter.setPen(li->pen());
-                        //painter.drawLine(e.p1.toPointF() + tit->pos(), e.p2.toPointF() +tit->pos());
                         painter.drawPath(lPath);
                     }
                 }
+                li->setZValue(0);
                 li->setParentItem(tit);
             }
+            tit->setZValue(1);
         }
         dxP += pageDim.x();
     }
     if (doSVG) {
-        qreal s = 297/266;
-        painter.scale(s, s);
         painter.end();
     }
 
     rVue->setScene(scene);
-
+    reducePages();
 }
 
 void Unfold::display() {
@@ -1077,122 +980,123 @@ Copl* Unfold::getCopl(int F, int V) {
 }
 
 void Unfold::stickPiece(int a, int b) {
-    qInfo("stickPiece %d %d", a, b);
+    //qInfo("stickPiece %d %d", a, b);
     Facette* fA = getFacette(a);
     Facette* fB = getFacette(b);
     Piece* pieceA = getPiece(fA->piece);
     Piece* pieceB = getPiece(fB->piece);
     Page* pageB = getPage(fB->page);
 
-    bool ok; // A et B doivent être dans des pièces différentes
-    ok = fA->piece != fB->piece;
+    if (fA->piece == fB->piece) {
+        qInfo() << "STICK erreur : aretes d'une meme piece";
+        return;
+    }
 
     std::vector<fct> pool;
     std::vector<fct> newP;
     size_t maxP = 0;
-    if (ok) {
-      std::cout << "FACETTES A DEPLACER" << std::endl;
-      for (auto&& f : facettes) {
-        if (f.page == fB->page && f.piece == fB->piece && f.orig > -1) {
-            //std::cout << (f.pose ? "1" : "0") << " " << f.id <<" " << f.orig << std::endl;
-            fct fc;
-            fc.id = f.id;
-            fc.orig = f.orig;
-            fc.pose = false;
-            pool.push_back(fc);
-            maxP++;
-        }
-      }
 
-      // 1) commencer par la face b liée à a
-      fct fc = {b, a, true};
-      newP.push_back(fc);
+  std::cout << "FACETTES A DEPLACER" << std::endl;
+  for (auto&& f : facettes) {
+    if (f.page == fB->page && f.piece == fB->piece && f.orig > -1) {
+        //std::cout << (f.pose ? "1" : "0") << " " << f.id <<" " << f.orig << std::endl;
+        fct fc;
+        fc.id = f.id;
+        fc.orig = f.orig;
+        fc.pose = false;
+        pool.push_back(fc);
+        maxP++;
+    }
+  }
 
-      // 2) boucler sur pool et insérer si orig est dans newP
-      bool lok;
+  // 1) commencer par la face b liée à a
+  fct fc = {b, a, true};
+  newP.push_back(fc);
+
+  // 2) boucler sur pool et insérer si orig est dans newP
+  bool lok;
+  do {
       do {
-          do {
-            for (auto&& p : pool) {
-                if (p.pose)
-                    continue;
-                lok = false;
-                for (auto&& n : newP) {
-                    if (p.orig == n.id) {
-                        p.pose = true;
-                        newP.push_back(p);
-                        lok = true;
-                        break;
-                    }
-                }
-                if (lok) {
+        for (auto&& p : pool) {
+            if (p.pose)
+                continue;
+            lok = false;
+            for (auto&& n : newP) {
+                if (p.orig == n.id) {
+                    p.pose = true;
+                    newP.push_back(p);
+                    lok = true;
                     break;
                 }
             }
-          } while (lok && newP.size() <= maxP);
+            if (lok) {
+                break;
+            }
+        }
+      } while (lok && newP.size() <= maxP);
 
-          // 3) boucler sur pool et insérer si orig est dans newP
-          do {
-            for (auto&& p : pool) {
-                if (p.pose)
-                    continue;
-                lok = false;
-                for (auto&& n : newP) {
-                    if (p.id == n.id) {
-                        p.pose = true;
-                        lok = true;
-                        break;
-                    }
-                }
-                if (lok) {
-                    //std::cout << "OK " << p.orig << " " << p.id << std::endl;
-                    fct f2 = {p.orig, p.id, true};
-                    newP.push_back(f2);
+      // 3) boucler sur pool et insérer si orig est dans newP
+      do {
+        for (auto&& p : pool) {
+            if (p.pose)
+                continue;
+            lok = false;
+            for (auto&& n : newP) {
+                if (p.id == n.id) {
+                    p.pose = true;
+                    lok = true;
                     break;
                 }
             }
-          } while (lok && newP.size() <= maxP);
-      } while (newP.size() <= maxP);
+            if (lok) {
+                //std::cout << "OK " << p.orig << " " << p.id << std::endl;
+                fct f2 = {p.orig, p.id, true};
+                newP.push_back(f2);
+                break;
+            }
+        }
+      } while (lok && newP.size() <= maxP);
+  } while (newP.size() <= maxP);
 
-      // FIN) Afficher
+  // FIN) Afficher
 //      std::cout << "POOL" << std::endl;
 //      for (auto&& ap : pool)
 //        std::cout << (ap.pose ? "1" : "0") << " " << ap.id <<" " << ap.orig << std::endl;
 
-      std::cout << "RESULTAT" << std::endl;
-      Facette facOrig;
-      for (auto&& an : newP) {
-        facettes[an.id].orig = an.orig;
-        facettes[an.id].page = fA->page;
-        facettes[an.id].piece = fA->piece;
-        std::cout << (an.pose ? "1" : "0") << " " << an.id <<" " << an.orig << std::endl;
-        facOrig = facettes[an.orig];
-        std::cout << facettes[an.id] << std::endl;
-        Neighbor *n = facOrig.findNeighbor(an.id);
-        facettes[an.id].triangle +=
-            facOrig.triangle.point(n->id) - facettes[an.id].triangle.point(n->idx);
-        double angle = calc_angle(
-            facOrig.triangle.point(n->id),
-            facOrig.triangle.point(next(n->id)),
-            facettes[an.id].triangle.point(prev(n->idx)));
-        facettes[an.id].triangle.rotate(facOrig.triangle.point(n->id), angle);
-        pieceA->ajouteFace(facettes[an.id], an.orig, fA->page, fA->piece);
-      }
-      // supprimer ancienne piece
-      for (size_t i = 0; i < pageB->pieces.size(); i++) {
-        if (pageB->pieces.at(i).id == pieceB->id) {
-            pageB->pieces.erase(pageB->pieces.begin() + i);
-            break;
-        }
-      }
-
-      //reajuste_pieces();
-      recalculeNums();
-      displayUI();
+  std::cout << "RESULTAT" << std::endl;
+  Facette facOrig;
+  for (auto&& an : newP) {
+    facettes[an.id].orig = an.orig;
+    facettes[an.id].page = fA->page;
+    facettes[an.id].piece = fA->piece;
+    std::cout << (an.pose ? "1" : "0") << " " << an.id <<" " << an.orig << std::endl;
+    facOrig = facettes[an.orig];
+    std::cout << facettes[an.id] << std::endl;
+    Neighbor *n = facOrig.findNeighbor(an.id);
+    facettes[an.id].triangle +=
+        facOrig.triangle.point(n->id) - facettes[an.id].triangle.point(n->idx);
+    float angle = calc_angle(
+        facOrig.triangle.point(n->id),
+        facOrig.triangle.point(next(n->id)),
+        facettes[an.id].triangle.point(prev(n->idx)));
+    facettes[an.id].triangle.rotate(facOrig.triangle.point(n->id), angle);
+    pieceA->ajouteFace(facettes[an.id], an.orig, fA->page, fA->piece);
+  }
+  // supprimer ancienne piece
+  for (size_t i = 0; i < pageB->pieces.size(); i++) {
+    if (pageB->pieces.at(i).id == pieceB->id) {
+        pageB->pieces.erase(pageB->pieces.begin() + i);
+        break;
     }
+  }
+
+  //reajuste_pieces();
+  recalculeNums();
+  displayUI();
 }
 
 void Unfold::splitPiece(int a, int b) {
-    qInfo("splitPiece %d %d", a, b);
+    //qInfo("splitPiece %d %d", a, b);
     //qInfo() << a;
     //qInfo() << b;
 
@@ -1249,6 +1153,10 @@ void Unfold::splitPiece(int a, int b) {
 
     int nPiece = pieceNextID();
     Piece* pieceA = getPiece(fA->piece);
+    if (!pieceA) {
+        qInfo() << "SPLIT : erreur piece " << fA->piece;
+        return;
+    }
     Piece nP = Piece(nPiece);
     nP.O = QVector2D(0,0);
 
@@ -1272,14 +1180,13 @@ void Unfold::splitPiece(int a, int b) {
 }
 
 void Unfold::changeLanguette(int f, int n) {
-    qInfo() << "customclic " << f << " " << n;
+    //qInfo() << "customclic " << f << " " << n;
     Flap* flap = getFlap(f, n);
     if (!flap)
         flap = getFlap(n, f);
 
     if (flap) {
         flap->state = -1 * flap->state;
-        qInfo() << flap->fId << " " << flap->nId << " " << flap->state;
         displayUI();
     }
 }
