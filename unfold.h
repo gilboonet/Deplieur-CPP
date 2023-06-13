@@ -28,7 +28,6 @@
 #include "piece.h"
 #include "page.h"
 #include "flap.h"
-#include "../svg.hpp"
 
 class TitleItem;
 
