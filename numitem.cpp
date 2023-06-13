@@ -2,13 +2,15 @@
 
 #include <QCursor>
 #include <QFont>
+#include <QFontDatabase>
 
 NumItem::NumItem(const QString text, int id1, int id2)
 : QGraphicsSimpleTextItem(text), nF(id1), fid(id2)
 {
     setCursor(Qt::PointingHandCursor);
     setAcceptHoverEvents(true);
-    setFont(QFont("Courier", 9));
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    setFont(QFont(fixedFont.family(), 9));
 }
 
 void NumItem::mousePressEvent(QGraphicsSceneMouseEvent *)

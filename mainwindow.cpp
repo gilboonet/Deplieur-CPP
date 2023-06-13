@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionGauche, &QAction::triggered, this, &MainWindow::gauche);
     connect(ui->actionDroite, &QAction::triggered, this, &MainWindow::droite);
 
-    connect(ui->actionOptimiser_num, &QAction::toggled, this, &MainWindow::basculerOptimiserNums);
+    connect(ui->actionOptimiser_num, &QAction::triggered, this, &MainWindow::basculerOptimiserNums);
 
     QActionGroup* PageFormatGroup = new QActionGroup(this);
     PageFormatGroup->addAction(ui->actionA3);
@@ -149,7 +149,8 @@ void MainWindow::pageFormat(float x, float y) {
 void MainWindow::basculerOptimiserNums()
 {
     if (unfold) {
-        unfold->optimiserNums = !unfold->optimiserNums;
+        //unfold->optimiserNums = !unfold->optimiserNums;
+        unfold->optimiserNums = true;
         unfold->recalculeNums();
         unfold->displayUI();
     }
