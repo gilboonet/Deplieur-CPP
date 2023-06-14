@@ -3,3 +3,5 @@ Unfold a volume into a 2d pattern to build a paper/cardboard/fabric version of i
 
 Initial version was deplie.cpp that was compiled using Geany IDE
 Current version is deplieur.pro that is a QT Creator plain C++ project.
+
+Doc (français) : https://github.com/gilboonet/Deplieur-CPP/wiki
