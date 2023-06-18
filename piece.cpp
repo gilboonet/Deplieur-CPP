@@ -24,7 +24,7 @@ void Piece::ajouteFace(Facette& fa, int orig, int page, int piece) {
     fa.pose = true;
 }
 
-bool Piece::operator ==(const Piece& p) {
+bool Piece::operator == (const Piece& p) const {
     if (this->id == p.id)
         return true;
     return false;

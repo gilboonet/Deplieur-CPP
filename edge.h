@@ -13,7 +13,7 @@ public :
     Edge(const int, const int);
     Edge(const int, const int, const int);
 
-    bool operator ==(const Edge&);
+    bool operator ==(const Edge&) const;
 };
 
 

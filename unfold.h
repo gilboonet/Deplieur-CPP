@@ -71,13 +71,13 @@ private :
     void    display_edges();
     void    display_neighbourhood();
     void    display_copl();
-    void    load_OBJ();
+    void    load_OBJ(const QByteArray *donnees);
     Piece*  pieceGetById(std::vector<Piece> &, int);
     Edge*   edgeGet(int fid, int nid);
 
 public :
     Unfold();
-    Unfold(std::string, std::string, std::string, QGraphicsView*);
+    Unfold(std::string, std::string, std::string, QGraphicsView*, const QByteArray *);
 
     std::vector<Page>       pages;
     QGraphicsView*          rVue;
@@ -89,12 +89,14 @@ public :
     QVector2D               pageDim;
     int                     modeLanguettes; // 0:sans 1:1/paire 2:toutes
     int                     hLanguettes; // 15 par défaut
+    QByteArray              svgRoot;
+
     void                    display_unfold(std::ostream &);
     void                    display_facettes(std::ostream&);
     void                    load_DAT();
 
     static  QVector3D       read_points(std::string);
-    static  std::vector<int> read_faces(std::string, int);
+    static  std::vector<int> read_faces(std::string, int);    
     static  Page            read_page(std::string);
     static  Piece           read_piece(std::string);
     static  Facette         read_Premfacette(std::string);

@@ -20,7 +20,7 @@ public :
 
     void recadre(const Triangle2d&);
     void ajouteFace(Facette&, int, int, int);
-    bool operator ==(const Piece&);
+    bool operator ==(const Piece&) const;
 };
 
 

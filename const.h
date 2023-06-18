@@ -1,6 +1,7 @@
 #ifndef CONST_H
 #define CONST_H
 
+#include "../svg.hpp"
 #include "triangle2d.h"
 
 struct sedge {
@@ -19,18 +20,24 @@ const float dMax =  999999;
 int         prev(const int);
 int         next(const int);
 float       calc_angle(QVector2D, QVector2D, QVector2D);
-float       radToDeg(float d);
-float       degToRad(float d);
-bool        eq(float a, float b);
-bool        eq(QVector2D a, QVector2D b);
+float       radToDeg(float);
+float       degToRad(float);
+bool        eq(float, float);
+bool        eq(QVector2D, QVector2D);
 int         sgn(float);
 float       cmpo(float);
-QVector2D   cmpo(QVector2D v);
-Triangle2d  cmpo(Triangle2d t);
+QVector2D   cmpo(QVector2D);
+Triangle2d  cmpo(Triangle2d);
 QVector2D   middle (QVector2D, QVector2D);
-float       distance(const QVector2D& v1, const QVector2D& v2);
-float       angle(const QVector2D&, const QVector2D& p);
-QVector2D   rotatePt(const QVector2D& v, const QVector2D& c, const float a);
+float       distance(const QVector2D&, const QVector2D&);
+float       angle(const QVector2D&, const QVector2D&);
+QVector2D   rotatePt(const QVector2D&, const QVector2D&, const float);
+QPointF     rotatePt(const QPointF&, const QPointF&, const float);
 float       direction (const QVector2D&, const QVector2D&);
+
+void        svgPathMoveTo(SVG::Path*, QPointF);
+void        svgPathLineTo(SVG::Path*, QPointF);
+void        drawHersheyInt(SVG::Path *, QPointF, int, double, double);
+
 
 #endif // CONST_H

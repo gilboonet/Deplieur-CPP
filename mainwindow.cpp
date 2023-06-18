@@ -97,11 +97,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actHL_18, &QAction::toggled, this, &MainWindow::langH18);
     connect(ui->actHL_19, &QAction::toggled, this, &MainWindow::langH19);
     connect(ui->actHL_20, &QAction::toggled, this, &MainWindow::langH20);
+
+    unfold = nullptr;
 }
 
 MainWindow::~MainWindow()
 {
-    free(unfold);
+    if (unfold)
+        free(unfold);
     delete ui;
 }
 
@@ -156,31 +159,30 @@ void MainWindow::basculerOptimiserNums()
     }
 }
 
-void MainWindow::quitter()
-{
+void MainWindow::quitter() {
     QApplication::quit();
 }
 
-void MainWindow::nouveau()
-{
-    QString obj = QFileDialog::getOpenFileName(
-        this, "Ouvrir fichier OBJ", "", "*.obj");
-    if (obj.isNull()) {
-        return;
-    }
-
-    unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView);
-    pageFormat_A4();
-    unfold->unfolding();
-    unfold->init_flaps();
-    unfold->displayUI();
-    unlockMenus();
+void MainWindow::nouveau() {
+    auto fileContentReady = [&](const QString &obj, const QByteArray &donnees) {
+        if (obj.isEmpty()) {
+            // No file was selected
+            return;
+        } else {
+            unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView, &donnees);
+            pageFormat_A4();
+            unfold->unfolding();
+            unfold->init_flaps();
+            unfold->displayUI();
+            unlockMenus();
+        }
+    };
+    QFileDialog::getOpenFileContent("Depliage (*.obj)",  fileContentReady);
 }
 
 void MainWindow::ouvrir()
 {
-    QString dat = QFileDialog::getOpenFileName(
-        this, "Ouvrir Depliage", "", "*.dat");
+    QString dat = QFileDialog::getOpenFileName(this, "Ouvrir Depliage", "", "*.dat");
     QString obj, svg;
 
     if (dat.isNull()) {
@@ -205,7 +207,8 @@ void MainWindow::ouvrir()
     qInfo() << "OBJ : " << obj;
     qInfo() << "SVG : " << svg;
 
-    unfold = new Unfold(obj.toStdString(), dat.toStdString(), svg.toStdString(), ui->graphicsView);
+    unfold = new Unfold(obj.toStdString(), dat.toStdString(), svg.toStdString(), ui->graphicsView, nullptr);
+
     pageFormat_A4();
     unlockMenus();
     unfold->load_DAT();
@@ -233,16 +236,19 @@ void MainWindow::sauver() {
 }
 
 void MainWindow::exporterSVG() {
+    unfold->displayUI("export2.svg");
+    QFileDialog::saveFileContent(unfold->svgRoot, "export.svg");
+}
+
+/*void MainWindow::exporterSVG() {
     if (unfold) {
         QString svg = QFileDialog::getSaveFileName(this, "Exporter le gabarit", "", "SVG (*.svg)");
         if (svg.isNull()) {
             return;
         }
-
-        //unfold->syncUI();
         unfold->displayUI(svg);
     }
-}
+}*/
 
 void MainWindow::unlockMenus()
 {
