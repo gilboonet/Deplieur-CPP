@@ -26,7 +26,7 @@ struct fct {
 
 struct ppos {
     int id;
-    QVector2D pos;
+    QPointF pos;
 };
 
 std::ostream& operator <<(std::ostream& os, const Facette& f) {
@@ -36,7 +36,7 @@ std::ostream& operator <<(std::ostream& os, const Facette& f) {
     return os;
 }
 
-std::ostream& operator <<(std::ostream& os, const QVector2D& v) {
+std::ostream& operator <<(std::ostream& os, const QPointF& v) {
     os << v.x() << " " << v.y();
     return os;
 }
@@ -351,7 +351,7 @@ void Unfold::reducePages() {
     std::vector <pd> nouvPage;
     for (auto&& pg : pages) {
         for (auto&& pi : pg.pieces) {
-            QVector2D c = pi.O + (pi.pMax - pi.pMin);
+            QPointF c = pi.O + (pi.pMax - pi.pMin);
             int p = c.x() / cmpo(pageDim.x());
             //qInfo() << "piece " << (pi.id+1) << " " << p << " " << pg.id;
             if (p != pg.id) {
@@ -739,7 +739,7 @@ void Unfold::syncUI() {
                 TitleItem* ti = static_cast<TitleItem*>(it);
                 Piece* pi = getPiece(ti->data(0).toInt());
                 if (pi) {
-                    pi->O = QVector2D(
+                    pi->O = QPointF(
                         pi->O.x() - ti->data(1).toFloat() + ti->pos().x(),
                         pi->O.y() - ti->data(2).toFloat() + ti->pos().y()
                     );
@@ -815,10 +815,17 @@ void Unfold::displayUI(QString svg) {
     if (modeLanguettes == 2) {
         fs = 1;
     }
+
+    SVG::Group *pageGroup;
+    SVG::Path *pCoupes = nullptr, *pPlisM = nullptr, *pPlisV = nullptr, *pTextes = nullptr;
+
     for (auto&& page : pages) {
         scene->addRect(cmpo(2.5), cmpo(2.5), cmpo(pageDim.x()-5), cmpo(pageDim.y()-5))->setPos(cmpo(dxP), 0);
-        SVG::Group *pageGroup;
-        SVG::Path *pCoupes, *pPlisM, *pPlisV, *pTextes;
+        pageGroup = nullptr;
+        pCoupes = nullptr;
+        pPlisM = nullptr;
+        pPlisV = nullptr;
+        pTextes = nullptr;
 
         bool pageOK = page.pieces.size() > 0;
         if (doSVG && pageOK) {
@@ -828,19 +835,25 @@ void Unfold::displayUI(QString svg) {
 
             pTextes = pageGroup->add_child<SVG::Path>();
             pTextes->set_attr("id", QString("nums%1").arg(snum).toStdString());
-            pTextes->set_attr("class", "a");
+            //pTextes->set_attr("class", "a");
+            pTextes->set_attr("stroke", "black");
 
             pCoupes = pageGroup->add_child<SVG::Path>();
             pCoupes->set_attr("id", QString("coupes%1").arg(snum).toStdString());
             pCoupes->set_attr("class", "C");
+            pCoupes->set_attr("stroke", "red");
 
             pPlisM = pageGroup->add_child<SVG::Path>();
             pPlisM->set_attr("id", QString("plisM%1").arg(snum).toStdString());
             pPlisM->set_attr("class", "M");
+            pPlisM->set_attr("stroke", "brown");
+            pPlisM->set_attr("stroke-dasharray", "4");
 
             pPlisV = pageGroup->add_child<SVG::Path>();
             pPlisV->set_attr("id", QString("plisV%1").arg(snum).toStdString());
             pPlisV->set_attr("class", "V");
+            pPlisV->set_attr("stroke", "green");
+            pPlisV->set_attr("stroke-dasharray", "4 1 1 1");
         }
 
         for (auto&& piece : page.pieces) {
@@ -849,16 +862,16 @@ void Unfold::displayUI(QString svg) {
             tit->setData(0, piece.id);
             scene->addItem(tit);
             // calcule emplacement au centre de la pièce
-            QVector2D cTIT{};
+            QPointF cTIT{};
             for (auto&& fn : piece.faceId)
                 cTIT += getFacette(fn)->triangle.centroid();
             cTIT /= piece.faceId.size();
 
             // recherche du centre de face le plus proche
-            QVector2D proche;
+            QPointF proche;
             float dist = 10000;
             for (auto&& fn : piece.faceId) {
-                float d = cTIT.distanceToPoint(getFacette(fn)->triangle.centroid());
+                float d = distance(cTIT, getFacette(fn)->triangle.centroid());
                 if (dist > d) {
                     dist = d;
                     proche = getFacette(fn)->triangle.centroid();
@@ -866,26 +879,27 @@ void Unfold::displayUI(QString svg) {
             }
             cTIT = proche;
 
-            QVector2D tt = cmpo(cTIT) + piece.O + QVector2D(cmpo(5), cmpo(5));
-            QVector2D b = QVector2D(tit->boundingRect().width(), tit->boundingRect().height()) / 2;
+            QPointF tt = cmpo(cTIT) + piece.O + QPointF(cmpo(5), cmpo(5));
+            QPointF b = QPointF(tit->boundingRect().width(), tit->boundingRect().height()) / 2;
             cTIT = tt - b;
-            tit->setPos(cTIT.toPointF());
+            tit->setPos(cTIT);
             tit->setData(1, cTIT.x());
             tit->setData(2, cTIT.y());
             if (doSVG && pageOK) {
                 SVG::Path* tp = pageGroup->add_child<SVG::Path>();
                 tp->set_attr("id", QString("titre_%1").arg(piece.id+1).toStdString());
                 tp->set_attr("class", "T");
-                drawHersheyInt(tp, tt.toPointF() + QPointF(0, 11*0.75), piece.id+1, 0, 0.75);
+                tp->set_attr("stroke", "indigo");
+                drawHersheyInt(tp, tt + QPointF(0, 11*0.75), piece.id+1, 0, 0.75);
             }
 
             for (auto&& fn : piece.faceId) {
-                Triangle2d tt = cmpo(getFacette(fn)->triangle) + piece.O + QVector2D(cmpo(5), cmpo(5));
+                Triangle2d tt = cmpo(getFacette(fn)->triangle) + piece.O + QPointF(cmpo(5), cmpo(5));
                 for (int i = 0; i < 3 ; i++){
                     // facette's edges and neighbors #
                     int nF = getFacette(fn)->neighbors[i].nF;
                     bool ok = true;
-                    QVector2D p1 = tt.point(i) - cTIT,
+                    QPointF p1 = tt.point(i) - cTIT,
                               p2 = tt.point(next(i)) - cTIT;
                     for (auto&& e: pedges) {
                         if (fn == e.nF && nF == e.fid)
@@ -915,10 +929,10 @@ void Unfold::displayUI(QString svg) {
                         ed->nO = max_nO++;
                 }
                 LineItem *li = new LineItem();
-                li->setLine(QLineF(e.p1.toPointF(), e.p2.toPointF()));
+                li->setLine(QLineF(e.p1, e.p2));
                 if (doSVG && pageOK) {
-                    se1 = e.p1.toPointF() + tit->pos();
-                    se2 = e.p2.toPointF() + tit->pos();
+                    se1 = e.p1 + tit->pos();
+                    se2 = e.p2 + tit->pos();
                 }
 
                 int cop = getFacette(e.fid)->findNeighbor(e.nF)->cop;
@@ -960,8 +974,18 @@ void Unfold::displayUI(QString svg) {
                         if (d > 50) dt = dt/2;
                         float a = degToRad(90) - direction(e.p1, e.p2);
 
-                        QPointF P1 = rotatePt(e.p1 + QVector2D(lang_s, d*dt), e.p1, a).toPointF();
-                        QPointF P2 = rotatePt(e.p1 + QVector2D(lang_s, d*(1-dt)), e.p1, a).toPointF();
+                        QPointF P1 = rotatePt(e.p1 + QPointF(lang_s, d*dt), e.p1, a);
+                        QPointF P2 = rotatePt(e.p1 + QPointF(lang_s, d*(1-dt)), e.p1, a);
+
+                        QPainterPath path;
+                        path.moveTo(e.p1);
+                        path.lineTo(P1);
+                        path.lineTo(P2);
+                        path.lineTo(e.p2);
+                        QGraphicsPathItem* pi = scene->addPath(path);
+                        pi->setZValue(0);
+                        pi->setParentItem(tit);
+                        pi->setPen(QPen(Qt::red, 2));
 
                         if (doSVG && pageOK) {
                             svgPathMoveTo(pCoupes, se1);
@@ -987,22 +1011,22 @@ void Unfold::displayUI(QString svg) {
                     if (edg) {
                         int n = optimiserNums ? edg->nO : edg->nE;
                         NumItem *ti = new NumItem(QString::number(n), e.nF, e.fid);
-                        QVector2D b = QVector2D(ti->boundingRect().width()/2, ti->boundingRect().height());
-                        ti->setTransformOriginPoint(b.toPointF());
+                        QPointF b = QPointF(ti->boundingRect().width()/2, ti->boundingRect().height());
+                        ti->setTransformOriginPoint(b);
                         float ra = angle(e.p1, e.p2) - std::numbers::pi;
                         float deg = qRadiansToDegrees(ra);
                         ti->setRotation(deg);
-                        QVector2D c = middle(e.p1, e.p2) - b;
-                        ti->setPos(c.toPointF());
+                        QPointF c = middle(e.p1, e.p2) - b;
+                        ti->setPos(c);
                         ti->setZValue(0);
                         ti->setParentItem(tit);
                         if (doSVG && pageOK) {
-                            drawHersheyInt(pTextes, c.toPointF() + b.toPointF() + tit->pos()
+                            drawHersheyInt(pTextes, c + b + tit->pos()
                             , n, 360-deg, 0.3);
                         }
                     }
                 } else {
-                    li->setLine(QLineF(e.p1.toPointF(), e.p2.toPointF()));
+                    li->setLine(QLineF(e.p1, e.p2));
                     li->setTypeLigne(cop < 0 ? TL_LIE_V : (cop > 0) ? TL_LIE_M : TL_LIE_C);
                     li->setOutlineColor((cop < 0) ? Qt::green : (cop > 0) ? QColor(180,0,0) : QColor(240,240,240)); //Qt::lightGray);
                     li->setOutlineWidth(1);
@@ -1229,7 +1253,7 @@ void Unfold::splitPiece(int a, int b) {
         return;
     }
     Piece nP = Piece(nPiece);
-    nP.O = QVector2D(0,0);
+    nP.O = QPointF(0,0);
 
     for (auto&& p : newP ) {
         Facette *pf = getFacette(p.id);
