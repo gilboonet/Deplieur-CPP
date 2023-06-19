@@ -12,6 +12,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsView>
+#include <QLineF>
 #include <QList>
 #include <QObject>
 #include <QSize>
@@ -785,19 +786,19 @@ void Unfold::displayUI(QString svg) {
 
         // Basic CSS support
         root.style("path").set_attr("fill", "none").set_attr("stroke-width", "0.15mm");
-        root.style("path.T").set_attr("stroke", "indigo");
-        root.style("path.a").set_attr("stroke", "black");
-        root.style("path.C").set_attr("stroke", "red");
-        root.style("path.M").set_attr("stroke", "brown")
-            .set_attr("stroke-dasharray", "4");
-        root.style("path.V").set_attr("stroke", "green")
-            .set_attr("stroke-dasharray", "4 1 1 1");
+        //root.style("path.T").set_attr("stroke", "indigo");
+        //root.style("path.a").set_attr("stroke", "black");
+        //root.style("path.C").set_attr("stroke", "red");
+        //root.style("path.M").set_attr("stroke", "brown")
+        //    .set_attr("stroke-dasharray", "4");
+        //root.style("path.V").set_attr("stroke", "green")
+        //    .set_attr("stroke-dasharray", "4 1 1 1");
 
-        root.style("text").set_attr("text-anchor", "middle")
-            .set_attr("dominant-baseline", "middle");
+        //root.style("text").set_attr("text-anchor", "middle")
+        //    .set_attr("dominant-baseline", "middle");
 
-        root.style("text.a").set_attr("fill", "black").set_attr("font-size", "7px");
-        root.style("text.T").set_attr("fill", "Indigo").set_attr("font-size", "15px");
+        //root.style("text.a").set_attr("fill", "black").set_attr("font-size", "7px");
+        //root.style("text.T").set_attr("fill", "Indigo").set_attr("font-size", "15px");
     }
 
     QGraphicsScene* scene = new QGraphicsScene;
@@ -835,23 +836,19 @@ void Unfold::displayUI(QString svg) {
 
             pTextes = pageGroup->add_child<SVG::Path>();
             pTextes->set_attr("id", QString("nums%1").arg(snum).toStdString());
-            //pTextes->set_attr("class", "a");
             pTextes->set_attr("stroke", "black");
 
             pCoupes = pageGroup->add_child<SVG::Path>();
             pCoupes->set_attr("id", QString("coupes%1").arg(snum).toStdString());
-            pCoupes->set_attr("class", "C");
             pCoupes->set_attr("stroke", "red");
 
             pPlisM = pageGroup->add_child<SVG::Path>();
             pPlisM->set_attr("id", QString("plisM%1").arg(snum).toStdString());
-            pPlisM->set_attr("class", "M");
             pPlisM->set_attr("stroke", "brown");
             pPlisM->set_attr("stroke-dasharray", "4");
 
             pPlisV = pageGroup->add_child<SVG::Path>();
             pPlisV->set_attr("id", QString("plisV%1").arg(snum).toStdString());
-            pPlisV->set_attr("class", "V");
             pPlisV->set_attr("stroke", "green");
             pPlisV->set_attr("stroke-dasharray", "4 1 1 1");
         }
@@ -888,7 +885,6 @@ void Unfold::displayUI(QString svg) {
             if (doSVG && pageOK) {
                 SVG::Path* tp = pageGroup->add_child<SVG::Path>();
                 tp->set_attr("id", QString("titre_%1").arg(piece.id+1).toStdString());
-                tp->set_attr("class", "T");
                 tp->set_attr("stroke", "indigo");
                 drawHersheyInt(tp, tt + QPointF(0, 11*0.75), piece.id+1, 0, 0.75);
             }
@@ -976,6 +972,38 @@ void Unfold::displayUI(QString svg) {
 
                         QPointF P1 = rotatePt(e.p1 + QPointF(lang_s, d*dt), e.p1, a);
                         QPointF P2 = rotatePt(e.p1 + QPointF(lang_s, d*(1-dt)), e.p1, a);
+                        QLineF LLang, LL1, LL2, l2;
+                        QPointF iP{};
+                        for(auto&& e2:pedges) {
+                            LLang = QLineF(P1, P2);
+                            LL1 = QLineF(e.p1, P1);
+                            LL2 = QLineF(e.p2, P2);
+                            l2 = QLineF(e2.p1, e2.p2);
+                            if (LLang.intersects(l2, &iP) == QLineF::BoundedIntersection) {
+                                if (distance(P1, iP) < distance(P2, iP)) {
+                                    P1 = iP;
+                                    P2 = e.p2;
+                                } else {
+                                    P2 = iP;
+                                    P1 = e.p1;
+                                }
+                                LLang = QLineF(P1, P2);
+                                LL1 = QLineF(e.p1, P1);
+                                LL2 = QLineF(e.p2, P2);
+                            }
+
+                            if (!eq(e.p1, e2.p1) && !eq(e.p1, e2.p2) && LL1.intersects(l2, &iP) == QLineF::BoundedIntersection) {
+                                P2 = iP;
+                                LLang = QLineF(P1, P2);
+                                LL2 = QLineF(e.p2, P2);
+                            }
+
+                            if (!eq(e.p2, e2.p1) && !eq(e.p2, e2.p2) && LL2.intersects(l2, &iP) == QLineF::BoundedIntersection) {
+                                P1 = iP;
+                                LLang = QLineF(P1, P2);
+                                LL1 = QLineF(e.p1, P1);
+                            }
+                        }
 
                         QPainterPath path;
                         path.moveTo(e.p1);
@@ -989,10 +1017,8 @@ void Unfold::displayUI(QString svg) {
 
                         if (doSVG && pageOK) {
                             svgPathMoveTo(pCoupes, se1);
-                            P1 += tit->pos();
-                            P2 += tit->pos();
-                            svgPathLineTo(pCoupes, P1);
-                            svgPathLineTo(pCoupes, P2);
+                            svgPathLineTo(pCoupes, P1 + tit->pos());
+                            svgPathLineTo(pCoupes, P2 + tit->pos());
                             svgPathLineTo(pCoupes, se2);
                         }
                     } else {
