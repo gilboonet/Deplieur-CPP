@@ -219,7 +219,7 @@
     <string>Tourner 15° Droite</string>
    </property>
    <property name="shortcut">
-    <string>Alt+PgDown</string>
+    <string>Alt+*</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -230,7 +230,7 @@
     <string>Tourner 5° Droite</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+PgDown</string>
+    <string>Ctrl+*</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -241,7 +241,7 @@
     <string>Tourner 5° Gauche</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+PgUp</string>
+    <string>Ctrl+/</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -257,7 +257,7 @@
     <string>Tourner 15° Gauche</string>
    </property>
    <property name="shortcut">
-    <string>Alt+PgUp</string>
+    <string>Alt+/</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -312,7 +312,7 @@
     <string>Tourner 1° Droite</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+PgDown</string>
+    <string>Ctrl+Shift+*</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -323,7 +323,7 @@
     <string>Tourner 1° Gauche</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+PgUp</string>
+    <string>Ctrl+Shift+/</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>

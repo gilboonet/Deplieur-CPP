@@ -1007,9 +1007,11 @@ void Unfold::displayUI(QString svg) {
 
                         QPainterPath path;
                         path.moveTo(e.p1);
-                        path.lineTo(P1);
+                        if(!eq(e.p1, P1))
+                            path.lineTo(P1);
                         path.lineTo(P2);
-                        path.lineTo(e.p2);
+                        if(!eq(e.p2, P2))
+                            path.lineTo(e.p2);
                         QGraphicsPathItem* pi = scene->addPath(path);
                         pi->setZValue(0);
                         pi->setParentItem(tit);
@@ -1017,9 +1019,11 @@ void Unfold::displayUI(QString svg) {
 
                         if (doSVG && pageOK) {
                             svgPathMoveTo(pCoupes, se1);
-                            svgPathLineTo(pCoupes, P1 + tit->pos());
+                            if(!eq(e.p1, P1))
+                                svgPathLineTo(pCoupes, P1 + tit->pos());
                             svgPathLineTo(pCoupes, P2 + tit->pos());
-                            svgPathLineTo(pCoupes, se2);
+                            if(!eq(e.p2, P2))
+                                svgPathLineTo(pCoupes, se2);
                         }
                     } else {
                         li->setTypeLigne(cop < 0 ? TL_COUPE_V : (cop > 0) ? TL_COUPE_M : TL_COUPE_C);
