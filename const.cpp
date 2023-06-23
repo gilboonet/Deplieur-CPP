@@ -1,5 +1,7 @@
 #include <cmath>
 #include <numbers>
+#include <QtMath>
+#include <QString>
 
 #include "const.h"
 
@@ -11,67 +13,67 @@ int next(const int n) {  // returns next value from triplet(0,1,2)
     return n < 2 ? n + 1 : 0;
 }
 
-bool eq(float a, float b) {
-    return std::abs(a - b) < epsilon;
+bool eq(qreal a, qreal b) {
+    return qFabs(a - b) < epsilon;
 }
 
-bool eq(QVector2D a, QVector2D b) {
+bool eq(QPointF a, QPointF b) {
     return eq(a.x(), b.x()) && eq(a.y(), b.y());
 }
 
-float radToDeg(float r) {
+qreal radToDeg(qreal r) {
     return (r * 180) / std::numbers::pi;
 }
 
-float degToRad(float d) {
+qreal degToRad(qreal d) {
     return d * std::numbers::pi / 180;
 }
 
-float calc_angle(QVector2D a, QVector2D b, QVector2D c) {
-    QVector2D ab = b - a;
-    QVector2D ac = c - a;
+qreal calc_angle(QPointF a, QPointF b, QPointF c) {
+    QPointF ab = b - a;
+    QPointF ac = c - a;
 
-    float rot_ab_ac = atan2(ac.y() * ab.x() - ac.x() * ab.y(), ac.x() * ab.x() + ac.y() * ab.y());
+    qreal rot_ab_ac = atan2(ac.y() * ab.x() - ac.x() * ab.y(), ac.x() * ab.x() + ac.y() * ab.y());
     return rot_ab_ac;
 }
 
-int sgn(float x) {
+int sgn(qreal x) {
    if (x < 0) return 1;
    if (x > 0) return -1;
    return 0;
 }
 
-float cmpo(float x) { return x * 2.54;}
+qreal cmpo(qreal x) { return x * 2.54;}
 
-QVector2D cmpo(QVector2D v) { return v * 2.54;}
+QPointF cmpo(QPointF v) { return v * 2.54;}
 
 Triangle2d cmpo(Triangle2d t) { return t * 2.54;}
 
-QVector2D middle (QVector2D a, QVector2D b) {
+QPointF middle (QPointF a, QPointF b) {
     return (a + b) / 2;
 }
 
-float distance(const QVector2D& v1, const QVector2D& v2) {
-    QVector2D d = v2 - v1;
+qreal distance(const QPointF& v1, const QPointF& v2) {
+    QPointF d = v2 - v1;
     return sqrt((d.x() * d.x()) +(d.y() * d.y()));
 }
 
-float angle(const QVector2D& v, const QVector2D& p) {
+qreal angle(const QPointF& v, const QPointF& p) {
     return atan2(p.y() - v.y(), p.x() - v.x());
 }
 
-QVector2D rotatePt(const QVector2D& v, const QVector2D& c, const float a) {
-    float lcos = cos(a);
-    float lsin = sin(a);
+QPointF rotatePt(const QPointF& v, const QPointF& c, const qreal a) {
+    qreal lcos = cos(a);
+    qreal lsin = sin(a);
 
-    QVector2D r = QVector2D(
+    QPointF r = QPointF(
        (lcos *(v.x() - c.x())) +(lsin *(v.y() - c.y())) + c.x(),
        (lcos *(v.y() - c.y())) -(lsin *(v.x() - c.x())) + c.y()
     );
     return r;
 }
 
-float direction(const QVector2D& p1, const QVector2D& p2) {
+qreal direction(const QPointF& p1, const QPointF& p2) {
     return atan2(p2.y() - p1.y(), p2.x() - p1.x());
 }
 
@@ -83,18 +85,7 @@ void svgPathLineTo(SVG::Path* path, QPointF point) {
     path->line_to(point.x(), point.y());
 }
 
-QPointF rotatePt(const QPointF& v, const QPointF& c, const float a) {
-    float lcos = cos(a);
-    float lsin = sin(a);
-
-    QPointF r = QPointF(
-       (lcos *(v.x() - c.x())) +(lsin *(v.y() - c.y())) + c.x(),
-       (lcos *(v.y() - c.y())) -(lsin *(v.x() - c.x())) + c.y()
-    );
-    return r;
-}
-
-void drawHersheyInt(SVG::Path *path, QPointF orig, int val, double angle, double ech = 1) {
+void drawHersheyInt(SVG::Path *path, QPointF orig, int val, qreal angle, qreal ech = 1) {
 
 struct spi {
     bool is_move;
@@ -104,7 +95,7 @@ struct spi {
     std::vector<spi> lspi;
     QString s = QString::number(val);
     QPointF O{};
-    double maxX = 0;
+    qreal maxX = 0;
     for (const auto c : s) {
         int num = c.digitValue();
         std::string p =

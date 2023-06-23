@@ -3,6 +3,7 @@
 #include "lineitem.h"
 
 #include <QActionGroup>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QString>
 #include <QFile>
@@ -98,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actHL_19, &QAction::toggled, this, &MainWindow::langH19);
     connect(ui->actHL_20, &QAction::toggled, this, &MainWindow::langH20);
 
+    connect(ui->actionWiki, &QAction::triggered, this, &MainWindow::openWikiPage);
+
     unfold = nullptr;
 }
 
@@ -106,6 +109,10 @@ MainWindow::~MainWindow()
     if (unfold)
         free(unfold);
     delete ui;
+}
+
+void MainWindow::openWikiPage() {
+    QDesktopServices::openUrl(QUrl("https://github.com/gilboonet/Deplieur-CPP/wiki"));
 }
 
 void MainWindow::langH11() { langHSet(11); }
@@ -142,9 +149,9 @@ void MainWindow::pageFormat_Cr2() { pageFormat(305, 305); }
 void MainWindow::pageFormat_Cr3() { pageFormat(115, 305); }
 void MainWindow::pageFormat_Cr4() { pageFormat(115, 165); }
 
-void MainWindow::pageFormat(float x, float y) {
+void MainWindow::pageFormat(qreal x, qreal y) {
     if (unfold) {
-        unfold->pageDim = QVector2D(x, y);
+        unfold->pageDim = QPointF(x, y);
         unfold->displayUI();
     }
 }
@@ -166,7 +173,7 @@ void MainWindow::quitter() {
 void MainWindow::nouveau() {
     auto fileContentReady = [&](const QString &obj, const QByteArray &donnees) {
         if (obj.isEmpty()) {
-            // No file was selected
+            // Aucune fichier sélectionné
             return;
         } else {
             unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView, &donnees);
@@ -177,78 +184,45 @@ void MainWindow::nouveau() {
             unlockMenus();
         }
     };
-    QFileDialog::getOpenFileContent("Depliage (*.obj)",  fileContentReady);
+    QFileDialog::getOpenFileContent("Fichier 3d (*.obj)",  fileContentReady);
 }
 
-void MainWindow::ouvrir()
-{
-    QString dat = QFileDialog::getOpenFileName(this, "Ouvrir Depliage", "", "*.dat");
-    QString obj, svg;
+void MainWindow::ouvrir() {
+    auto fileContentReady = [&](const QString &dat, const QByteArray &donnees) {
+        if (dat.isEmpty()) {
+            // Aucun fichier sélectionné
+            return;
+        } else {
+            unfold = new Unfold("", dat.toStdString(), "", ui->graphicsView, &donnees);
+            pageFormat_A4();
+            unlockMenus();
+            switch(unfold->modeLanguettes) {
+                case 0 : ui->actionLang0->setChecked(true); break;
+                case 1 : ui->actionLang1->setChecked(true); break;
+                case 2 : ui->actionLang2->setChecked(true);
+            }
+            unfold->displayUI();
+        }
+    };
+    QFileDialog::getOpenFileContent("Depliage (*.dat)", fileContentReady);
 
-    if (dat.isNull()) {
-       return;
-    }
-
-    QString ext = dat.chopped(4);
-    svg = ext + ".svg";
-
-    QFile fDAT(dat);
-    if (!fDAT.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(
-            this,
-            "Deplieur UI",
-            "Erreur de fichier"
-        );
-        return;
-    }
-    QByteArray line = fDAT.readLine();
-    obj = QString(line).trimmed();
-    qInfo() << "DAT : " << dat;
-    qInfo() << "OBJ : " << obj;
-    qInfo() << "SVG : " << svg;
-
-    unfold = new Unfold(obj.toStdString(), dat.toStdString(), svg.toStdString(), ui->graphicsView, nullptr);
-
-    pageFormat_A4();
-    unlockMenus();
-    unfold->load_DAT();
-    switch(unfold->modeLanguettes) {
-        case 0 : ui->actionLang0->setChecked(true); break;
-        case 1 : ui->actionLang1->setChecked(true); break;
-        case 2 : ui->actionLang2->setChecked(true);
-    }
-
-    unfold->displayUI();
 }
 
 void MainWindow::sauver() {
     if (unfold) {
-        QString dat = QFileDialog::getSaveFileName(this, "Sauver le dépliage", "", "Depliage (*.dat)");
-        if (dat.isNull()) {
-            return;
-        }
-
         unfold->syncUI();
-        std::ofstream sauveDat(dat.toStdString());
-        unfold->display_unfold(sauveDat);
-        sauveDat.close();
+        std::stringstream ss;
+        unfold->save_unfold(ss);
+        QFileDialog::saveFileContent(QByteArray::fromStdString(ss.str()), "gabarit.dat");
     }
 }
 
 void MainWindow::exporterSVG() {
-    unfold->displayUI("export2.svg");
-    QFileDialog::saveFileContent(unfold->svgRoot, "export.svg");
-}
-
-/*void MainWindow::exporterSVG() {
     if (unfold) {
-        QString svg = QFileDialog::getSaveFileName(this, "Exporter le gabarit", "", "SVG (*.svg)");
-        if (svg.isNull()) {
-            return;
-        }
-        unfold->displayUI(svg);
+        unfold->displayUI("export2.svg");
+        QFileDialog::saveFileContent(unfold->svgRoot, "export.svg");
     }
-}*/
+}
 
 void MainWindow::unlockMenus()
 {

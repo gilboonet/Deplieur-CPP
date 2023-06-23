@@ -195,11 +195,11 @@ void Unfold::display_neighbourhood() {
 }
 
 void Unfold::load_OBJ(const QByteArray *donnees) {
-    //qInfo() << *donnees;
     QTextStream tsOBJ(*donnees);
 
     groups.push_back("");
     int gCourant = 0;
+    nbFaces = 0;
 
     QString elem = tsOBJ.readLine();
     while (!elem.isNull()) {
@@ -208,6 +208,7 @@ void Unfold::load_OBJ(const QByteArray *donnees) {
             pts.push_back(read_points(selem));
         } else if(selem.starts_with("f ")) {
             faces.push_back(read_faces(selem, gCourant));
+            nbFaces++;
         } else if(selem.starts_with("g ")) {
             if(!groups[0].empty()) {
                 groups.push_back("");
@@ -222,36 +223,69 @@ void Unfold::load_OBJ(const QByteArray *donnees) {
         }
         elem = tsOBJ.readLine();
     }
-    nbFaces = static_cast<int>(faces.size());
 }
 
-void Unfold::load_DAT() {
-    std::fstream fsfnDAT(fnDAT);
+void Unfold::load_DAT(const QByteArray *donnees) {
+    QTextStream tsDAT(*donnees);
 
-    std::string elem;
     Page page;
     Piece piece;
     Facette facette;
     Flap flap;
+    QVector3D pt;
+    std::vector<int> face;
+    std::string groupe;
 
-    while(getline(fsfnDAT, elem)) {
-        if(elem.starts_with("P ")) {
-            page = read_page(elem);
+    // 1) Lecture donnees OBJ
+    nbFaces = 0;
+    QString elem = tsDAT.readLine();
+    while (!elem.isNull()) {
+        std::string selem = elem.toStdString();
+        if(selem.starts_with("v ")) {
+            pt = read_points(selem);
+            pts.push_back(pt);
+        }
+        else if(selem.starts_with("f ")) {
+            face = read_facesDAT(selem);
+            faces.push_back(face);
+            nbFaces++;
+        }
+        else if(selem.starts_with("G ")) {
+            groupe = read_group(selem);
+            groups.push_back(groupe);
+        }
+        elem = tsDAT.readLine();
+    }
+    init_triangles();
+    calc_neighbourhood();
+    calc_copl();
+    num_edges();
+    init_unfolding();
+
+    tsDAT.seek(0);
+    elem = tsDAT.readLine();
+    while (!elem.isNull()) {
+        std::string selem = elem.toStdString();
+        if(selem.starts_with("P ")) {
+            page = read_page(selem);
             pages.push_back(page);
-        } else if(elem.starts_with("p ")) {
-            piece = read_piece(elem);
+        }
+        else if(selem.starts_with("p ")) {
+            piece = read_piece(selem);
             page.pieces.push_back(piece);
             pages[page.id] = page;
-        } else if(elem.starts_with("F ")) {
-            facette = read_Premfacette(elem);
+        }
+        else if(selem.starts_with("T ")) {
+            facette = read_Premfacette(selem);
             facette.page = page.id;
             facette.piece = piece.id;
             getFacette(facette.id)->triangle = facette.triangle;
             piece.ajouteFace(*getFacette(facette.id), facette.orig, page.id, piece.id);
             page.pieces.back() = piece;
             pages[page.id] = page;
-        } else if(elem.starts_with("f ")) {
-            facette = read_facette(elem);
+        }
+        else if(selem.starts_with("t ")) {
+            facette = read_facette(selem);
             facette.page = page.id;
             facette.piece = piece.id;
             facette.triangle = t2d[facette.id];
@@ -263,7 +297,7 @@ void Unfold::load_DAT() {
                 facette.triangle += triOrig.point(n->id)
                     - facette.triangle.point(n->idx);
 
-                float angle = calc_angle(
+                qreal angle = calc_angle(
                     triOrig.point(n->id),
                     triOrig.point(next(n->id)),
                     facette.triangle.point(prev(n->idx)));
@@ -273,14 +307,16 @@ void Unfold::load_DAT() {
             piece.ajouteFace(*getFacette(facette.id), facette.orig, page.id, piece.id);
             page.pieces.back() = piece;
             pages[page.id] = page;
-        } else if (elem.starts_with("L ")) {
-            read_langMode(elem);
-        } else if (elem.starts_with("l ")) {
-            flap = read_flap(elem);
+        }
+        else if(selem.starts_with("L ")) {
+            read_langMode(selem);
+        }
+        else if(selem.starts_with("l ")) {
+            flap = read_flap(selem);
             flaps.push_back(flap);
         }
+        elem = tsDAT.readLine();
     }
-    //reajuste_pieces();
 }
 
 Piece* Unfold::pieceGetById(std::vector<Piece> &pieces, int id) {
@@ -348,13 +384,11 @@ struct pd {
 };
 
 void Unfold::reducePages() {
-    //qInfo() << "PAGINATION";
     std::vector <pd> nouvPage;
     for (auto&& pg : pages) {
         for (auto&& pi : pg.pieces) {
             QPointF c = pi.O + (pi.pMax - pi.pMin);
             int p = c.x() / cmpo(pageDim.x());
-            //qInfo() << "piece " << (pi.id+1) << " " << p << " " << pg.id;
             if (p != pg.id) {
                 pd d = {pi.id, pg.id, p};
                 nouvPage.push_back(d);
@@ -381,68 +415,76 @@ void Unfold::display_facettes(std::ostream &os) {
     }
 }
 
-void Unfold::display_unfold(std::ostream &os) {
-    if (&os == &std::cout) {
-        os << "unfolding" << std::endl;
-        for(auto&& page : pages) {
-            if (page.pieces.size() > 0) {
-                os << "PAGE " << page.id << std::endl;
-                for(auto&& piece : page.pieces) {
-                    os << "..PIECE " << piece.id << " " << piece.O << std::endl;
-                    for(auto && fid : piece.faceId) {
-                        Facette* face = getFacette(fid);
-                        os << "....FACE " << face->id << " orig: " << face->orig
-                           << " page: " << face->page << " piece: " << face->piece
-                           << std::endl;
+void Unfold::save_unfold(std::stringstream &ts) {
+    int nbPi = 0;
+    int nbPg = 0;
+
+    for(auto&& p : pts) {
+        ts << "v " << p.x() << " " << p.y() << " " << p.z() << std::endl;
+    }
+
+    for(auto&& g : groups) {
+        ts << "G " << g << std::endl;
+    }
+
+    for (auto&& f : faces) {
+        ts << "f";
+        for (int i = 0; i <= 3; i++)
+            ts << " " << f[i];
+
+        ts << std::endl;
+    }
+
+    for(auto&& page : pages) {
+        if (page.pieces.size() > 0) {
+            ts << "P " << nbPg++ << std::endl;
+            for(auto&& piece : page.pieces) {
+                ts << "p " << nbPi++ << " " << piece.O << std::endl;
+                for(auto && fid : piece.faceId) {
+                    Facette* f = getFacette(fid);
+                    if (f->orig == -1) {
+                        ts << "T " << f->id
+                        << " " << f->triangle.a.x() << " " << f->triangle.a.y()
+                        << " " << f->triangle.b.x() << " " << f->triangle.b.y()
+                        << " " << f->triangle.c.x() << " " << f->triangle.c.y()
+                        << std::endl;
+                    } else {
+                        ts << "t " << f->id << " " << f->orig << std::endl;
                     }
                 }
             }
         }
-    } else {
-        os << fnOBJ << std::endl;
-        int nbPi = 0;
-        int nbPg = 0;
-        for(auto&& page : pages) {
-            if (page.pieces.size() > 0) {
-                os << "P " << nbPg++ << std::endl;
-                for(auto&& piece : page.pieces) {
-                    os << "p " << nbPi++ << " " << piece.O << std::endl;
-                    for(auto && fid : piece.faceId) {
-                        Facette* f = getFacette(fid);
-                        if (f->orig == -1) {
-                            os << "F " << f->id
-                            << " " << f->triangle.a.x() << " " << f->triangle.a.y()
-                            << " " << f->triangle.b.x() << " " << f->triangle.b.y()
-                            << " " << f->triangle.c.x() << " " << f->triangle.c.y()
-                            << std::endl;
-                        } else {
-                            os << "f " << f->id << " " << f->orig << std::endl;
-                        }
-                    }
-                }
-            }
-        }
-        os << "L " << modeLanguettes << std::endl;
-        if (modeLanguettes == 1) {
-            for (auto&& l : flaps) {
-                os << "l " << l.fId << " " << l.nId << " " << l.state << std::endl;
-            }
+    }
+    ts << "L " << modeLanguettes << std::endl;
+    if (modeLanguettes == 1) {
+        for (auto&& l : flaps) {
+            ts << "l " << l.fId << " " << l.nId << " " << l.state << std::endl;
         }
     }
 }
 
 QVector3D Unfold::read_points(std::string ch) {
-    QVector3D r;
+    std::stringstream ss(ch);
+    char T;
+    qreal x, y, z;
+
+    ss >> T >> x >> y >> z;
+    return QVector3D(x, y, z);
+}
+
+std::vector<int> Unfold::read_facesDAT(std::string ch) {
+    std::vector<int> r;
     std::stringstream ss(ch);
     std::string el;
+    int f1, f2, f3, f4;
+    char T;
 
-    int n = 0;
-    while(ss >> el) {
-        if(n == 1) r.setX(stof(el));
-        else if(n == 2) r.setY(stof(el));
-        else if(n == 3) r.setZ(stof(el));
-        n++;
-    }
+    ss >> T >> f1 >> f2 >> f3 >> f4;
+    r.push_back(f1);
+    r.push_back(f2);
+    r.push_back(f3);
+    r.push_back(f4);
+
     return r;
 }
 
@@ -462,6 +504,16 @@ std::vector<int> Unfold::read_faces(std::string ch, int g) {
 
     }
     r.push_back(g);
+    return r;
+}
+
+std::string Unfold::read_group(std::string ch) {
+    std::string r;
+    std::stringstream ss(ch);
+    char T;
+
+    ss >> T >> r;
+
     return r;
 }
 
@@ -495,9 +547,10 @@ Piece Unfold::read_piece(std::string ch){
     Piece piece;
     piece.id = 0;
     std::stringstream ss(ch);
+    ss.precision(2);
 
     char T;
-    float x,y;
+    qreal x, y;
     ss >> T >> piece.id >> x >> y;
     piece.O.setX(x);
     piece.O.setY(y);
@@ -508,17 +561,13 @@ Piece Unfold::read_piece(std::string ch){
 Facette Unfold::read_Premfacette(std::string ch){
     Facette f;
     std::stringstream ss(ch);
+    ss.precision(2);
 
     char T;
-    std::string sax, say, sbx, sby, scx, scy;
+    qreal  sax, say, sbx, sby, scx, scy;
     ss >> T >> f.id >> sax >> say >> sbx >> sby >> scx >> scy;
     f.orig = -1;
-    f.triangle.a.setX(stof(sax));
-    f.triangle.a.setY(stof(say));
-    f.triangle.b.setX(stof(sbx));
-    f.triangle.b.setY(stof(sby));
-    f.triangle.c.setX(stof(scx));
-    f.triangle.c.setY(stof(scy));
+    f.triangle = Triangle2d(QPointF(sax, say), QPointF(sbx, sby), QPointF(scx, scy));
 
     return f;
 }
@@ -615,7 +664,7 @@ void Unfold::unfolding() {
                                 // rapprocher
                                 fn->triangle += fr->triangle.point(fv.id) - fn->triangle.point(fv.idx);
                                 // tourner
-                                float angle = calc_angle(
+                                qreal angle = calc_angle(
                                     fr->triangle.point(fv.id),
                                     fr->triangle.point(next(fv.id)),
                                     fn->triangle.point(prev(fv.idx))
@@ -640,7 +689,6 @@ void Unfold::unfolding() {
                     }
                 }while(ok);
 
-                //qInfo() << piece.pMax.x() - piece.pMin.x();
                 piece.O.setX(xMax);
                 xMax += cmpo(piece.pMax.x() - piece.pMin.x()+1);
                 page.ajoutePiece(piece);
@@ -674,8 +722,14 @@ Unfold::Unfold(std::string fOBJ, std::string fDAT, std::string fSVG,
     optimiserNums = false;
     modeLanguettes = 0;
     hLanguettes = 15;
-    if (donnees)
+    if (!fOBJ.empty())
         load_OBJ(donnees);
+    else if (!fDAT.empty())
+        load_DAT(donnees);
+    else {
+        // erreur
+        return;
+    }
     init_triangles();
     calc_neighbourhood();
     calc_copl();
@@ -712,7 +766,7 @@ void Unfold::rotatePieceCourante(int delta) {
             Triangle2d triOrig = getFacette(facette->orig)->triangle;
             facette->triangle += triOrig.point(n->id) - facette->triangle.point(n->idx);
 
-            float angle = calc_angle(
+            qreal angle = calc_angle(
                 triOrig.point(n->id),
                 triOrig.point(next(n->id)),
                 facette->triangle.point(prev(n->idx)));
@@ -786,19 +840,6 @@ void Unfold::displayUI(QString svg) {
 
         // Basic CSS support
         root.style("path").set_attr("fill", "none").set_attr("stroke-width", "0.15mm");
-        //root.style("path.T").set_attr("stroke", "indigo");
-        //root.style("path.a").set_attr("stroke", "black");
-        //root.style("path.C").set_attr("stroke", "red");
-        //root.style("path.M").set_attr("stroke", "brown")
-        //    .set_attr("stroke-dasharray", "4");
-        //root.style("path.V").set_attr("stroke", "green")
-        //    .set_attr("stroke-dasharray", "4 1 1 1");
-
-        //root.style("text").set_attr("text-anchor", "middle")
-        //    .set_attr("dominant-baseline", "middle");
-
-        //root.style("text.a").set_attr("fill", "black").set_attr("font-size", "7px");
-        //root.style("text.T").set_attr("fill", "Indigo").set_attr("font-size", "15px");
     }
 
     QGraphicsScene* scene = new QGraphicsScene;
@@ -810,8 +851,8 @@ void Unfold::displayUI(QString svg) {
     int fs = 0;
     int max_nO = 1;
 
-    float lang_s = static_cast<float>(hLanguettes);
-    float lang_dt = 0.45f;
+    qreal lang_s = static_cast<float>(hLanguettes);
+    qreal lang_dt = 0.45f;
 
     if (modeLanguettes == 2) {
         fs = 1;
@@ -866,9 +907,9 @@ void Unfold::displayUI(QString svg) {
 
             // recherche du centre de face le plus proche
             QPointF proche;
-            float dist = 10000;
+            qreal dist = 10000;
             for (auto&& fn : piece.faceId) {
-                float d = distance(cTIT, getFacette(fn)->triangle.centroid());
+                qreal d = distance(cTIT, getFacette(fn)->triangle.centroid());
                 if (dist > d) {
                     dist = d;
                     proche = getFacette(fn)->triangle.centroid();
@@ -896,7 +937,7 @@ void Unfold::displayUI(QString svg) {
                     int nF = getFacette(fn)->neighbors[i].nF;
                     bool ok = true;
                     QPointF p1 = tt.point(i) - cTIT,
-                              p2 = tt.point(next(i)) - cTIT;
+                            p2 = tt.point(next(i)) - cTIT;
                     for (auto&& e: pedges) {
                         if (fn == e.nF && nF == e.fid)
                             if ((eq(e.p1, p1) && eq(e.p2, p2)) || (eq(e.p1, p2) && eq(e.p2, p1))) {
@@ -965,10 +1006,10 @@ void Unfold::displayUI(QString svg) {
                             }
                         }
 
-                        float d = distance(e.p1, e.p2);
-                        float dt = lang_dt;
+                        qreal d = distance(e.p1, e.p2);
+                        qreal dt = lang_dt;
                         if (d > 50) dt = dt/2;
-                        float a = degToRad(90) - direction(e.p1, e.p2);
+                        qreal a = degToRad(90) - direction(e.p1, e.p2);
 
                         QPointF P1 = rotatePt(e.p1 + QPointF(lang_s, d*dt), e.p1, a);
                         QPointF P2 = rotatePt(e.p1 + QPointF(lang_s, d*(1-dt)), e.p1, a);
@@ -1043,8 +1084,8 @@ void Unfold::displayUI(QString svg) {
                         NumItem *ti = new NumItem(QString::number(n), e.nF, e.fid);
                         QPointF b = QPointF(ti->boundingRect().width()/2, ti->boundingRect().height());
                         ti->setTransformOriginPoint(b);
-                        float ra = angle(e.p1, e.p2) - std::numbers::pi;
-                        float deg = qRadiansToDegrees(ra);
+                        qreal ra = angle(e.p1, e.p2) - std::numbers::pi;
+                        qreal deg = qRadiansToDegrees(ra);
                         ti->setRotation(deg);
                         QPointF c = middle(e.p1, e.p2) - b;
                         ti->setPos(c);
@@ -1088,18 +1129,6 @@ void Unfold::displayUI(QString svg) {
 
     rVue->setScene(scene);
     reducePages();
-}
-
-void Unfold::display() {
-    //display_triangles();
-    //display_points();
-    //display_faces();
-    //display_groups();
-    //display_neighbourhood();
-    //display_edges();
-    //display_facettes(std::cout);
-    //display_copl();
-    display_unfold(std::cout);
 }
 
 Copl* Unfold::getCopl(int F, int V) {
@@ -1209,7 +1238,7 @@ void Unfold::stickPiece(int a, int b) {
     //std::cout << *fn << std::endl;
     Neighbor *n = facOrig->findNeighbor(an.id);
     fn->triangle += facOrig->triangle.point(n->id) - fn->triangle.point(n->idx);
-    float angle = calc_angle(
+    qreal angle = calc_angle(
         facOrig->triangle.point(n->id),
         facOrig->triangle.point(next(n->id)),
         fn->triangle.point(prev(n->idx)));
@@ -1221,16 +1250,10 @@ void Unfold::stickPiece(int a, int b) {
 }
 
 void Unfold::splitPiece(int a, int b) {
-    qInfo("splitPiece %d %d", a, b);
-    //qInfo() << a;
-    //qInfo() << b;
-
     Facette* fA = getFacette(a);
 
     std::vector<fct> pool;
     std::vector<fct> newP;
-
-    //size_t maxP = 0;
 
     for (auto&& f : facettes) {
         if (f.page == fA->page) {
@@ -1239,13 +1262,8 @@ void Unfold::splitPiece(int a, int b) {
             fc.orig = f.orig;
             fc.pose = false;
             pool.push_back(fc);
-            //maxP++;
         }
     }
-
-    //std::cout << "FACETTES A TESTER" << std::endl;
-    //for (auto&& p : pool )
-    //    std::cout << p.pose << " " << p.id << " " << p.orig << std::endl;
 
     bool ok = false;
     do {
@@ -1268,13 +1286,8 @@ void Unfold::splitPiece(int a, int b) {
                 newP.push_back(p);
                 break;
             }
-            //ok = false;
         }
     } while (ok);
-
-    //std::cout << "FACETTES DEPLACEES" << std::endl;
-    //for (auto&& p : newP )
-    //    std::cout << p.pose << " " << p.id << " " << p.orig << std::endl;
 
     int nPiece = pieceNextID();
     Piece* pieceA = getPiece(fA->piece);

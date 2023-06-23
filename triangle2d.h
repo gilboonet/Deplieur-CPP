@@ -1,31 +1,30 @@
 #ifndef TRIANGLE2D_H
 #define TRIANGLE2D_H
 
-
-#include <QVector2D>
+#include <QPointF>
 
 class Triangle2d
 {
 public:
-    QVector2D a, b, c;
+    QPointF a, b, c;
 
     Triangle2d();
-    Triangle2d(QVector2D, QVector2D, QVector2D);
+    Triangle2d(QPointF, QPointF, QPointF);
 
-    Triangle2d operator +(const QVector2D&);
-    Triangle2d &operator +=(const QVector2D&);
-    Triangle2d operator -(const QVector2D&);
-    Triangle2d &operator -=(const QVector2D&);
-    Triangle2d operator *(const float&);
-    Triangle2d operator /(const float&);
+    Triangle2d operator +(const QPointF&);
+    Triangle2d &operator +=(const QPointF&);
+    Triangle2d operator -(const QPointF&);
+    Triangle2d &operator -=(const QPointF&);
+    Triangle2d operator *(const qreal&);
+    Triangle2d operator /(const qreal&);
 
-    QVector2D point(const int);
-    Triangle2d& rotate(const QVector2D&, const float);
+    QPointF point(const int);
+    Triangle2d& rotate(const QPointF&, const qreal);
     bool overlap(const Triangle2d&);
-    QVector2D centroid();
+    QPointF centroid();
 };
 
-bool li(QVector2D, QVector2D, QVector2D, QVector2D);
+bool li(QPointF, QPointF, QPointF, QPointF);
 
 
 #endif // TRIANGLE2D_H

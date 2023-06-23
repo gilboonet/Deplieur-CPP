@@ -50,7 +50,7 @@ private slots:
     void pageFormat_Cr2();
     void pageFormat_Cr3();
     void pageFormat_Cr4();
-    void pageFormat(float, float);
+    void pageFormat(qreal, qreal);
 
     void langMode0();
     void langMode1();
@@ -68,6 +68,8 @@ private slots:
     void langH19();
     void langH20();
     void langHSet(int);
+
+    void openWikiPage();
 
 private:
     Ui::MainWindow *ui;
