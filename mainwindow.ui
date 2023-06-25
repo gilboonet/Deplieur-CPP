@@ -154,10 +154,17 @@
     <addaction name="menuLanguettes"/>
     <addaction name="menuHaut_Languettes"/>
    </widget>
+   <widget class="QMenu" name="menuAide">
+    <property name="title">
+     <string>Aide</string>
+    </property>
+    <addaction name="actionWiki"/>
+   </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuAffichage"/>
    <addaction name="menuGabarit"/>
    <addaction name="menuPiece"/>
+   <addaction name="menuAide"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNouveau">
@@ -190,7 +197,7 @@
     <string>Zoom +</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl++</string>
+    <string>+</string>
    </property>
   </action>
   <action name="actionZoom_Normal">
@@ -198,7 +205,7 @@
     <string>Zoom 1:1</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+0</string>
+    <string>0</string>
    </property>
   </action>
   <action name="actionZoom_Moins">
@@ -206,7 +213,7 @@
     <string>Zoom -</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+-</string>
+    <string>-</string>
    </property>
   </action>
   <action name="actionSauver">
@@ -230,7 +237,7 @@
     <string>Tourner 5° Droite</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+*</string>
+    <string>*</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -241,7 +248,7 @@
     <string>Tourner 5° Gauche</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+/</string>
+    <string>/</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -312,7 +319,7 @@
     <string>Tourner 1° Droite</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+*</string>
+    <string>Ctrl+*</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -323,7 +330,7 @@
     <string>Tourner 1° Gauche</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+/</string>
+    <string>Ctrl+/</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -495,6 +502,11 @@
    </property>
    <property name="text">
     <string>20</string>
+   </property>
+  </action>
+  <action name="actionWiki">
+   <property name="text">
+    <string>Wiki</string>
    </property>
   </action>
  </widget>
