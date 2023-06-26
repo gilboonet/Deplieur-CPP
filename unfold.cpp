@@ -899,6 +899,8 @@ void Unfold::displayUI(QString svg) {
             TitleItem *tit = new TitleItem(QString::number(piece.id+1), this);
             tit->setData(0, piece.id);
             scene->addItem(tit);
+            if (piece.id == IdPieceCourante)
+                tit->setSelected(true);
             // calcule emplacement au centre de la pièce
             QPointF cTIT{};
             for (auto&& fn : piece.faceId)

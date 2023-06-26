@@ -21,7 +21,8 @@ TitleItem::TitleItem(const QString text, Unfold *d) :
     setAcceptHoverEvents(true);
     setCursor(QCursor(Qt::OpenHandCursor));
     setFlags(QGraphicsItem::ItemIsFocusable
-    | QGraphicsItem::ItemIsMovable);
+    | QGraphicsItem::ItemIsMovable
+    | QGraphicsItem::ItemIsSelectable);
 
 }
 
