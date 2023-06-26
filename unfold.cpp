@@ -1099,7 +1099,7 @@ void Unfold::displayUI(QString svg) {
                 } else {
                     li->setLine(QLineF(e.p1, e.p2));
                     li->setTypeLigne(cop < 0 ? TL_LIE_V : (cop > 0) ? TL_LIE_M : TL_LIE_C);
-                    li->setOutlineColor((cop < 0) ? Qt::green : (cop > 0) ? QColor(180,0,0) : QColor(240,240,240)); //Qt::lightGray);
+                    li->setOutlineColor((cop < 0) ? Qt::green : (cop > 0) ? QColor(180,0,0) : QColor(240,240,240));
                     li->setOutlineWidth(1);
                     li->setCustomPen();
                     li->setCursor(QCursor(Qt::SplitHCursor));
@@ -1148,7 +1148,7 @@ void Unfold::stickPiece(int a, int b) {
     Page* pageB = getPage(fB->page);
 
     if (fA->piece == fB->piece) {
-        qInfo() << "STICK erreur : aretes d'une meme piece";
+        //qInfo() << "STICK erreur : aretes d'une meme piece";
         return;
     }
 
@@ -1173,8 +1173,10 @@ void Unfold::stickPiece(int a, int b) {
   fct fc = {b, a, true};
   newP.push_back(fc);
 
+  //qInfo() << "stick etape 1";
+
   // 2) boucler sur pool et insérer si orig est dans newP
-  bool lok;
+  bool lok = false;
   do {
       do {
         for (auto&& p : pool) {
@@ -1219,13 +1221,9 @@ void Unfold::stickPiece(int a, int b) {
   } while (newP.size() <= maxP);
 
   // FIN) Afficher
-//      std::cout << "POOL" << std::endl;
-//      for (auto&& ap : pool)
-//        std::cout << (ap.pose ? "1" : "0") << " " << ap.id <<" " << ap.orig << std::endl;
-
-  // supprimer ancienne piece
-  //std::erase_if(getPage(fB->page)->pieces, [&](Piece p) {return p.id == pieceB->id;});
-  std::erase_if(pageB->pieces, [&](Piece p) {return p.id == pieceB->id;});
+      //std::cout << "POOL" << std::endl;
+      //for (auto&& ap : pool)
+        //std::cout << (ap.pose ? "1" : "0") << " " << ap.id <<" " << ap.orig << std::endl;
 
   //std::cout << "RESULTAT" << std::endl;
   for (auto&& an : newP) {
@@ -1245,6 +1243,10 @@ void Unfold::stickPiece(int a, int b) {
     fn->triangle.rotate(facOrig->triangle.point(n->id), angle);
     pieceA->ajouteFace(*fn, an.orig, fA->page, fA->piece);
   }
+
+  // supprimer ancienne piece
+  std::erase_if(pageB->pieces, [&](Piece p) {return p.id == pieceB->id;});
+
   recalculeNums();
   displayUI();
 }
@@ -1292,7 +1294,7 @@ void Unfold::splitPiece(int a, int b) {
     int nPiece = pieceNextID();
     Piece* pieceA = getPiece(fA->piece);
     if (!pieceA) {
-        qInfo() << "SPLIT : erreur piece " << fA->piece;
+        //qInfo() << "SPLIT : erreur piece " << fA->piece;
         return;
     }
     Piece nP = Piece(nPiece);
@@ -1301,7 +1303,7 @@ void Unfold::splitPiece(int a, int b) {
     for (auto&& p : newP ) {
         Facette *pf = getFacette(p.id);
         if (!pf) {
-            qInfo() << "SPLIT : erreur facette " << p.id;
+            //qInfo() << "SPLIT : erreur facette " << p.id;
             return;
         }
         nP.ajouteFace(*pf, p.orig, fA->page, nPiece);

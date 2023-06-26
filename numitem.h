@@ -17,6 +17,8 @@ public:
     NumItem(QString, int, int);
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *);
 };
 
 #endif // NUMITEM_H

@@ -21,7 +21,6 @@ TitleItem::TitleItem(const QString text, Unfold *d) :
     setAcceptHoverEvents(true);
     setCursor(QCursor(Qt::OpenHandCursor));
     setFlags(QGraphicsItem::ItemIsFocusable
-    //| QGraphicsItem::ItemIsSelectable
     | QGraphicsItem::ItemIsMovable);
 
 }
@@ -44,20 +43,3 @@ void TitleItem::mousePressEvent(QGraphicsSceneMouseEvent *)
             break;
     }
 }
-
-/*QVariant TitleItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
-    if (change == ItemPositionChange) {
-        // value is the new position.
-        QPointF newPos = value.toPointF();
-        Piece *pieceCourante = donnees->getPieceCourante();
-        if (pieceCourante) {
-            //qInfo() << QVector2D(newPos);
-            pieceCourante->O = QVector2D(
-            pieceCourante->O.x() + this->pos().x() - newPos.x(),
-            pieceCourante->O.y() + this->pos().y() - newPos.y());
-        }
-
-    }
-    return QGraphicsItem::itemChange(change, value);
-}*/
