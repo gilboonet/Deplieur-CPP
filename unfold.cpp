@@ -207,8 +207,22 @@ void Unfold::load_OBJ(const QByteArray *donnees) {
         if(selem.starts_with("v ")) {
             pts.push_back(read_points(selem));
         } else if(selem.starts_with("f ")) {
-            faces.push_back(read_faces(selem, gCourant));
-            nbFaces++;
+            std::vector<int> rf = read_faces(selem);
+/*
+for(j = 1; j< f.length-1; j++){
+    faces.push([f[0], f[j], f[j+1]])
+}
+*/
+            std::vector<int> rfj;
+            for(size_t j = 1; j < rf.size()-1; j++) {
+                rfj.clear();
+                rfj.push_back(rf[0]);
+                rfj.push_back(rf[j]);
+                rfj.push_back(rf[j+1]);
+                rfj.push_back(gCourant);
+                faces.push_back(rfj);
+                nbFaces++;
+            }
         } else if(selem.starts_with("g ")) {
             if(!groups[0].empty()) {
                 groups.push_back("");
@@ -488,7 +502,7 @@ std::vector<int> Unfold::read_facesDAT(std::string ch) {
     return r;
 }
 
-std::vector<int> Unfold::read_faces(std::string ch, int g) {
+std::vector<int> Unfold::read_faces(std::string ch) {
     std::vector<int> r;
     std::stringstream ss(ch);
     std::string el;
@@ -503,7 +517,7 @@ std::vector<int> Unfold::read_faces(std::string ch, int g) {
         n++;
 
     }
-    r.push_back(g);
+    //r.push_back(g);
     return r;
 }
 

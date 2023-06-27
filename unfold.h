@@ -11,8 +11,8 @@
 #include <ostream>
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsView>
+#include <QPointF>
 #include <QString>
-#include <QVector2D>
 #include <QVector3D>
 #include <sstream>
 #include <string>
@@ -86,17 +86,20 @@ public :
     bool                    optimiserNums;
     TitleItem*              titleItem;
     int                     IdPieceCourante;
-    QVector2D               pageDim;
+    QPointF                 pageDim;
     int                     modeLanguettes; // 0:sans 1:1/paire 2:toutes
     int                     hLanguettes; // 15 par défaut
     QByteArray              svgRoot;
 
-    void                    display_unfold(std::ostream &);
+    //void                    display_unfold(std::ostream &);
     void                    display_facettes(std::ostream&);
-    void                    load_DAT();
+    void                    save_unfold(std::stringstream&);
+    void                    load_DAT(const QByteArray *donnees);
 
     static  QVector3D       read_points(std::string);
-    static  std::vector<int> read_faces(std::string, int);    
+    static  std::vector<int> read_faces(std::string);
+    static  std::vector<int> read_facesDAT(std::string);
+    static  std::string     read_group(std::string);
     static  Page            read_page(std::string);
     static  Piece           read_piece(std::string);
     static  Facette         read_Premfacette(std::string);
@@ -109,7 +112,6 @@ public :
     int                     pieceNextID();
     void                    unfolding();
     int                     getNbFaces();
-    void                    display();
     void                    displayUI(QString = "");
     void                    syncUI();
     void                    reajuste_pieces();
@@ -129,7 +131,7 @@ public :
     void                    reducePages();
 };
 
-std::ostream& operator <<(std::ostream& os, const QVector2D& v);
+std::ostream& operator <<(std::ostream& os, const QPointF& v);
 std::ostream& operator <<(std::ostream& os, const QVector3D& v);
 std::ostream& operator <<(std::ostream& os, const Triangle2d& t);
 std::ostream& operator <<(std::ostream& os, const Triangle3d& t);
