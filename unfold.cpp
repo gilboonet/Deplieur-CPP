@@ -65,7 +65,11 @@ Facette* Unfold::FirstFreeFacette(int g) {
     return nullptr;
 }
 
-void Unfold::init_triangles() {
+void Unfold::init_triangles(qreal ech) {
+    for(auto&& p : pts) {
+        p *= ech;
+    }
+
     for(int i = 0; i < nbFaces; i++) {
         Triangle3d t3di = Triangle3d(
             pts[faces[i][0]], pts[faces[i][1]], pts[faces[i][2]]);
@@ -208,11 +212,6 @@ void Unfold::load_OBJ(const QByteArray *donnees) {
             pts.push_back(read_points(selem));
         } else if(selem.starts_with("f ")) {
             std::vector<int> rf = read_faces(selem);
-/*
-for(j = 1; j< f.length-1; j++){
-    faces.push([f[0], f[j], f[j+1]])
-}
-*/
             std::vector<int> rfj;
             for(size_t j = 1; j < rf.size()-1; j++) {
                 rfj.clear();
@@ -255,7 +254,19 @@ void Unfold::load_DAT(const QByteArray *donnees) {
     QString elem = tsDAT.readLine();
     while (!elem.isNull()) {
         std::string selem = elem.toStdString();
-        if(selem.starts_with("v ")) {
+        if(selem.starts_with("D ")) {
+            pageId = read_pageId(selem);
+            switch(pageId) {
+                case 3 : pageFormat(3); break;
+                case 5 : pageFormat(5); break;
+                case 11 : pageFormat(11); break;
+                case 12 : pageFormat(12); break;
+                case 13 : pageFormat(13); break;
+                case 14 : pageFormat(14); break;
+                default : pageFormat(4);
+            }
+        }
+        else if(selem.starts_with("v ")) {
             pt = read_points(selem);
             pts.push_back(pt);
         }
@@ -270,7 +281,7 @@ void Unfold::load_DAT(const QByteArray *donnees) {
         }
         elem = tsDAT.readLine();
     }
-    init_triangles();
+    init_triangles(1.0);
     calc_neighbourhood();
     calc_copl();
     num_edges();
@@ -331,6 +342,25 @@ void Unfold::load_DAT(const QByteArray *donnees) {
         }
         elem = tsDAT.readLine();
     }
+}
+
+void Unfold::pageFormat(int n) {
+    qreal x, y;
+
+    switch(n) {
+        case  3 : x = 297;      y = 420; break;
+        case  5 : x = 148.5;    y = 210; break;
+        case 11 : x = 305;      y = 610; break;
+        case 12 : x = 305;      y = 305; break;
+        case 13 : x = 115;      y = 305; break;
+        case 14 : x = 115;      y = 165; break;
+        default : x = 210;      y = 297;
+    }
+
+    pageDim = QPointF(x, y);
+    pageId = n;
+    qInfo() << "FIN pageFormat";
+    displayUI();
 }
 
 Piece* Unfold::pieceGetById(std::vector<Piece> &pieces, int id) {
@@ -407,6 +437,7 @@ void Unfold::reducePages() {
                 pd d = {pi.id, pg.id, p};
                 nouvPage.push_back(d);
             }
+            //qInfo() << pi.id << " " << pg.id << " " << p;
         }
     }
     // change pages
@@ -419,6 +450,8 @@ void Unfold::reducePages() {
             getFacette(fid)->piece = n.pid;
         }
     }
+
+    qInfo() << "fin reducePages";
 }
 
 void Unfold::display_facettes(std::ostream &os) {
@@ -433,6 +466,7 @@ void Unfold::save_unfold(std::stringstream &ts) {
     int nbPi = 0;
     int nbPg = 0;
 
+    ts << "D " << pageId << std::endl;
     for(auto&& p : pts) {
         ts << "v " << p.x() << " " << p.y() << " " << p.z() << std::endl;
     }
@@ -475,6 +509,15 @@ void Unfold::save_unfold(std::stringstream &ts) {
             ts << "l " << l.fId << " " << l.nId << " " << l.state << std::endl;
         }
     }
+}
+
+int Unfold::read_pageId(std::string ch) {
+    std::stringstream ss(ch);
+    char T;
+    int n;
+
+    ss >> T >> n;
+    return n;
 }
 
 QVector3D Unfold::read_points(std::string ch) {
@@ -658,6 +701,7 @@ int Unfold::pieceNextID() {
 
 void Unfold::unfolding() {
     int xMax = 0;
+    int nb = 0;
     for(size_t nG = 0; nG < groups.size(); nG++) {
         Facette* prochainLibre;
         do {
@@ -666,7 +710,6 @@ void Unfold::unfolding() {
                 Page page = Page(static_cast<int>(pages.size()));
                 Piece piece = Piece(pieceNextID());
                 piece.ajouteFace(*prochainLibre, -1, page.id, piece.id);
-
                 bool ok;
                 do {
                     ok = false;
@@ -694,6 +737,7 @@ void Unfold::unfolding() {
                                 // ajouter
                                 if(ok) {
                                     piece.ajouteFace(*fn, f, page.id, piece.id);
+                                    nb++;
                                     break;
                                 }
                             }
@@ -710,6 +754,7 @@ void Unfold::unfolding() {
             }
         } while(prochainLibre);
     }
+
     reajuste_pieces();
 }
 
@@ -729,7 +774,7 @@ int Unfold::getNbFaces() { return nbFaces;}
 Unfold::Unfold() {}
 
 Unfold::Unfold(std::string fOBJ, std::string fDAT, std::string fSVG,
-    QGraphicsView* vue, const QByteArray *donnees) :
+    QGraphicsView* vue, const QByteArray *donnees, qreal ech = 1.0) :
     fnOBJ(fOBJ), fnDAT(fDAT), fnSVG(fSVG), rVue(vue) {
 
     deja = false;
@@ -744,7 +789,7 @@ Unfold::Unfold(std::string fOBJ, std::string fDAT, std::string fSVG,
         // erreur
         return;
     }
-    init_triangles();
+    init_triangles(ech);
     calc_neighbourhood();
     calc_copl();
     num_edges();
@@ -800,7 +845,6 @@ void Unfold::deplacePieceCourante(int deltaX, int deltaY) {
     }
 }
 
-
 void Unfold::syncUI() {
     if (deja) {
         for (auto&& it : rVue->scene()->items()) {
@@ -820,6 +864,7 @@ void Unfold::syncUI() {
     } else {
         deja = true;
     }
+qInfo() << "syncUI";
 }
 
 void Unfold::displayUI(QString svg) {
@@ -830,6 +875,7 @@ void Unfold::displayUI(QString svg) {
     }
 
     reducePages();
+    qInfo() << "displayUI apres reducePages";
 
     bool doSVG = false;
     QFont fTitre, fNum;
@@ -876,6 +922,7 @@ void Unfold::displayUI(QString svg) {
     SVG::Path *pCoupes = nullptr, *pPlisM = nullptr, *pPlisV = nullptr, *pTextes = nullptr;
 
     for (auto&& page : pages) {
+        qInfo() << "PAGE " << page.id;
         scene->addRect(cmpo(2.5), cmpo(2.5), cmpo(pageDim.x()-5), cmpo(pageDim.y()-5))->setPos(cmpo(dxP), 0);
         pageGroup = nullptr;
         pCoupes = nullptr;
@@ -1144,7 +1191,6 @@ void Unfold::displayUI(QString svg) {
     }
 
     rVue->setScene(scene);
-    reducePages();
 }
 
 Copl* Unfold::getCopl(int F, int V) {
@@ -1188,8 +1234,6 @@ void Unfold::stickPiece(int a, int b) {
   // 1) commencer par la face b liée à a
   fct fc = {b, a, true};
   newP.push_back(fc);
-
-  //qInfo() << "stick etape 1";
 
   // 2) boucler sur pool et insérer si orig est dans newP
   bool lok = false;

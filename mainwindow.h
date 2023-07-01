@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 
 #include "unfold.h"
+#include "dialognouveau.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,6 +20,8 @@ public:
 
 private slots:
     void nouveau();
+    void lanceNouveau();
+
     void ouvrir();
     void sauver();
     void quitter();
@@ -50,7 +53,7 @@ private slots:
     void pageFormat_Cr2();
     void pageFormat_Cr3();
     void pageFormat_Cr4();
-    void pageFormat(qreal, qreal);
+    void pageFormat(int);
 
     void langMode0();
     void langMode1();
@@ -70,9 +73,11 @@ private slots:
     void langHSet(int);
 
     void openWikiPage();
+    void openVideosPage();
 
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *Scene;
+    DialogNouveau *dN;
 };
 #endif // MAINWINDOW_H

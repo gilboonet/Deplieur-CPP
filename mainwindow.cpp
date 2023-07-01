@@ -100,8 +100,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actHL_20, &QAction::toggled, this, &MainWindow::langH20);
 
     connect(ui->actionWiki, &QAction::triggered, this, &MainWindow::openWikiPage);
+    connect(ui->actionVideos, &QAction::triggered, this, &MainWindow::openVideosPage);
 
     unfold = nullptr;
+    dN = nullptr;
 }
 
 MainWindow::~MainWindow()
@@ -113,6 +115,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::openWikiPage() {
     QDesktopServices::openUrl(QUrl("https://github.com/gilboonet/Deplieur-CPP/wiki"));
+}
+
+void MainWindow::openVideosPage() {
+    QDesktopServices::openUrl(QUrl("https://www.youtube.com/playlist?list=PLowPymO2T_CcX8-VNbXaWQd8ghH332D4c"));
 }
 
 void MainWindow::langH11() { langHSet(11); }
@@ -141,25 +147,23 @@ void MainWindow::langModeSet(int mode) {
     unfold->displayUI();
 }
 
-void MainWindow::pageFormat_A3() { pageFormat(297, 420); }
-void MainWindow::pageFormat_A4() { pageFormat(210, 297); }
-void MainWindow::pageFormat_A5() { pageFormat(148.5, 210); }
-void MainWindow::pageFormat_Cr1() { pageFormat(305, 610); }
-void MainWindow::pageFormat_Cr2() { pageFormat(305, 305); }
-void MainWindow::pageFormat_Cr3() { pageFormat(115, 305); }
-void MainWindow::pageFormat_Cr4() { pageFormat(115, 165); }
+void MainWindow::pageFormat_A3() { pageFormat(3); }
+void MainWindow::pageFormat_A4() { pageFormat(4); }
+void MainWindow::pageFormat_A5() { pageFormat(5); }
+void MainWindow::pageFormat_Cr1() { pageFormat(11); }
+void MainWindow::pageFormat_Cr2() { pageFormat(12); }
+void MainWindow::pageFormat_Cr3() { pageFormat(13); }
+void MainWindow::pageFormat_Cr4() { pageFormat(14); }
 
-void MainWindow::pageFormat(qreal x, qreal y) {
+void MainWindow::pageFormat(int n) {
     if (unfold) {
-        unfold->pageDim = QPointF(x, y);
-        unfold->displayUI();
+        unfold->pageFormat(n);
     }
 }
 
 void MainWindow::basculerOptimiserNums()
 {
     if (unfold) {
-        //unfold->optimiserNums = !unfold->optimiserNums;
         unfold->optimiserNums = true;
         unfold->recalculeNums();
         unfold->displayUI();
@@ -171,19 +175,39 @@ void MainWindow::quitter() {
 }
 
 void MainWindow::nouveau() {
+    if (dN)
+        delete dN;
+    dN = new DialogNouveau();
+    connect(dN, &QDialog::finished, this, &MainWindow::lanceNouveau);
+    dN->open();
+}
+
+void MainWindow::lanceNouveau() {
     auto fileContentReady = [&](const QString &obj, const QByteArray &donnees) {
         if (obj.isEmpty()) {
             // Aucune fichier sélectionné
             return;
         } else {
-            unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView, &donnees);
-            pageFormat_A4();
+            RN_rep r = dN->retourneEdite();
+            unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView, &donnees, r.b);
+            switch(r.a) {
+                case 0 : pageFormat_A3(); break;
+                case 1 : pageFormat_A4(); break;
+                case 2 : pageFormat_A5(); break;
+                case 3 : pageFormat_Cr1(); break;
+                case 4 : pageFormat_Cr2(); break;
+                case 5 : pageFormat_Cr3(); break;
+                case 6 : pageFormat_Cr4(); break;
+                default :pageFormat_A4();
+            }
+
             unfold->unfolding();
             unfold->init_flaps();
             unfold->displayUI();
             unlockMenus();
         }
     };
+
     QFileDialog::getOpenFileContent("Fichier 3d (*.obj)",  fileContentReady);
 }
 
@@ -193,8 +217,17 @@ void MainWindow::ouvrir() {
             // Aucun fichier sélectionné
             return;
         } else {
-            unfold = new Unfold("", dat.toStdString(), "", ui->graphicsView, &donnees);
-            pageFormat_A4();
+            unfold = new Unfold("", dat.toStdString(), "", ui->graphicsView, &donnees, 1.0);
+            switch(unfold->pageId) {
+                case 4 : pageFormat_A4(); break;
+                case 3 : pageFormat_A3(); break;
+                case 5 : pageFormat_A5(); break;
+                case 11 : pageFormat_Cr1(); break;
+                case 12 : pageFormat_Cr2(); break;
+                case 13 : pageFormat_Cr3(); break;
+                case 14 : pageFormat_Cr4();
+            }
+
             unlockMenus();
             switch(unfold->modeLanguettes) {
                 case 0 : ui->actionLang0->setChecked(true); break;

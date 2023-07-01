@@ -60,7 +60,7 @@ private :
     std::string                         fnSVG;
 
     Facette* FirstFreeFacette(int);
-    void    init_triangles();
+    void    init_triangles(qreal);
     void    calc_neighbourhood();
     void    calc_copl();
     void    num_edges();
@@ -77,7 +77,7 @@ private :
 
 public :
     Unfold();
-    Unfold(std::string, std::string, std::string, QGraphicsView*, const QByteArray *);
+    Unfold(std::string, std::string, std::string, QGraphicsView*, const QByteArray *, qreal ech);
 
     std::vector<Page>       pages;
     QGraphicsView*          rVue;
@@ -87,6 +87,7 @@ public :
     TitleItem*              titleItem;
     int                     IdPieceCourante;
     QPointF                 pageDim;
+    int                     pageId;
     int                     modeLanguettes; // 0:sans 1:1/paire 2:toutes
     int                     hLanguettes; // 15 par défaut
     QByteArray              svgRoot;
@@ -96,15 +97,16 @@ public :
     void                    save_unfold(std::stringstream&);
     void                    load_DAT(const QByteArray *donnees);
 
-    static  QVector3D       read_points(std::string);
-    static  std::vector<int> read_faces(std::string);
-    static  std::vector<int> read_facesDAT(std::string);
-    static  std::string     read_group(std::string);
-    static  Page            read_page(std::string);
-    static  Piece           read_piece(std::string);
-    static  Facette         read_Premfacette(std::string);
-    static  Facette         read_facette(std::string);
-    static  Flap            read_flap(std::string);
+    static int              read_pageId(std::string);
+    static QVector3D        read_points(std::string);
+    static std::vector<int> read_faces(std::string);
+    static std::vector<int> read_facesDAT(std::string);
+    static std::string      read_group(std::string);
+    static Page             read_page(std::string);
+    static Piece            read_piece(std::string);
+    static Facette          read_Premfacette(std::string);
+    static Facette          read_facette(std::string);
+    static Flap             read_flap(std::string);
     void                    read_langMode(std::string);
 
     void                    init_unfolding();
@@ -129,6 +131,7 @@ public :
     void                    recalculeNums();
     void                    changeLanguette(int, int);
     void                    reducePages();
+    void                    pageFormat(int);
 };
 
 std::ostream& operator <<(std::ostream& os, const QPointF& v);

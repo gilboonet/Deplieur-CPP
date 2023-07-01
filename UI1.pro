@@ -11,6 +11,7 @@ CONFIG += c++20
 SOURCES += \
     const.cpp \
     copl.cpp \
+    dialognouveau.cpp \
     edge.cpp \
     facette.cpp \
     flap.cpp \
@@ -29,6 +30,7 @@ SOURCES += \
 HEADERS += \
     const.h \
     copl.h \
+    dialognouveau.h \
     edge.h \
     facette.h \
     flap.h \
@@ -44,12 +46,16 @@ HEADERS += \
     unfold.h
 
 FORMS += \
+    dialognouveau.ui \
     mainwindow.ui
 
-#TRANSLATIONS =  UI1_fr.ts \
-#                UI1_en.ts
+TRANSLATIONS =  UI1_fr.ts \
+                UI1_en.ts
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+  resources.qrc
