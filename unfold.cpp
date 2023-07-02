@@ -342,6 +342,8 @@ void Unfold::load_DAT(const QByteArray *donnees) {
         }
         elem = tsDAT.readLine();
     }
+    qInfo() << "faces " << faces.size();
+    qInfo() << "triangles depl " << facettes.size();
 }
 
 void Unfold::pageFormat(int n) {
@@ -359,7 +361,6 @@ void Unfold::pageFormat(int n) {
 
     pageDim = QPointF(x, y);
     pageId = n;
-    qInfo() << "FIN pageFormat";
     displayUI();
 }
 
@@ -437,21 +438,26 @@ void Unfold::reducePages() {
                 pd d = {pi.id, pg.id, p};
                 nouvPage.push_back(d);
             }
-            //qInfo() << pi.id << " " << pg.id << " " << p;
         }
     }
     // change pages
     for (auto&& n : nouvPage) {
         Piece p = *getPiece(n.pid);
         std::erase_if(getPage(n.pg)->pieces, [&](Piece p) {return p.id == n.pid;});
-        getPage(n.pc)->ajoutePiece(p);
+        if (!getPage(n.pc)) {
+            Page page;
+            page.id = n.pc;
+            page.ajoutePiece(p);
+            pages.push_back(page);
+        }
+        else {
+            getPage(n.pc)->ajoutePiece(p);
+        }
         for (auto&& fid : p.faceId) {
             getFacette(fid)->page = n.pc;
             getFacette(fid)->piece = n.pid;
         }
     }
-
-    qInfo() << "fin reducePages";
 }
 
 void Unfold::display_facettes(std::ostream &os) {
@@ -864,7 +870,6 @@ void Unfold::syncUI() {
     } else {
         deja = true;
     }
-qInfo() << "syncUI";
 }
 
 void Unfold::displayUI(QString svg) {
@@ -875,7 +880,6 @@ void Unfold::displayUI(QString svg) {
     }
 
     reducePages();
-    qInfo() << "displayUI apres reducePages";
 
     bool doSVG = false;
     QFont fTitre, fNum;
@@ -922,7 +926,6 @@ void Unfold::displayUI(QString svg) {
     SVG::Path *pCoupes = nullptr, *pPlisM = nullptr, *pPlisV = nullptr, *pTextes = nullptr;
 
     for (auto&& page : pages) {
-        qInfo() << "PAGE " << page.id;
         scene->addRect(cmpo(2.5), cmpo(2.5), cmpo(pageDim.x()-5), cmpo(pageDim.y()-5))->setPos(cmpo(dxP), 0);
         pageGroup = nullptr;
         pCoupes = nullptr;

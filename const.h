@@ -13,7 +13,7 @@ struct sedge {
     int nb;
 };
 
-const qreal epsilon = 0.5;
+const qreal epsilon = 1;
 const qreal dMin = -999999;
 const qreal dMax =  999999;
 
