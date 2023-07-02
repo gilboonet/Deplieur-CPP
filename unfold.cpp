@@ -566,7 +566,6 @@ std::vector<int> Unfold::read_faces(std::string ch) {
         n++;
 
     }
-    //r.push_back(g);
     return r;
 }
 
