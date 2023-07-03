@@ -922,7 +922,8 @@ void Unfold::displayUI(QString svg) {
     }
 
     SVG::Group *pageGroup;
-    SVG::Path *pCoupes = nullptr, *pPlisM = nullptr, *pPlisV = nullptr, *pTextes = nullptr;
+    SVG::Path *pCoupes = nullptr, *pTextes = nullptr;
+    SVG::Path *pPlisM = nullptr, *pPlisV = nullptr, *pPMS, *pPVS;
 
     for (auto&& page : pages) {
         scene->addRect(cmpo(2.5), cmpo(2.5), cmpo(pageDim.x()-5), cmpo(pageDim.y()-5))->setPos(cmpo(dxP), 0);
@@ -930,6 +931,8 @@ void Unfold::displayUI(QString svg) {
         pCoupes = nullptr;
         pPlisM = nullptr;
         pPlisV = nullptr;
+        pPMS = nullptr;
+        pPVS = nullptr;
         pTextes = nullptr;
 
         bool pageOK = page.pieces.size() > 0;
@@ -951,10 +954,18 @@ void Unfold::displayUI(QString svg) {
             pPlisM->set_attr("stroke", "brown");
             pPlisM->set_attr("stroke-dasharray", "4");
 
+            pPMS = pageGroup->add_child<SVG::Path>();
+            pPMS->set_attr("id", QString("marqueM%1").arg(snum).toStdString());
+            pPMS->set_attr("stroke", "brown");
+
             pPlisV = pageGroup->add_child<SVG::Path>();
             pPlisV->set_attr("id", QString("plisV%1").arg(snum).toStdString());
             pPlisV->set_attr("stroke", "green");
             pPlisV->set_attr("stroke-dasharray", "4 1 1 1");
+
+            pPVS = pageGroup->add_child<SVG::Path>();
+            pPVS->set_attr("id", QString("marqueV%1").arg(snum).toStdString());
+            pPVS->set_attr("stroke", "green");
         }
 
         for (auto&& piece : page.pieces) {
@@ -1058,16 +1069,20 @@ void Unfold::displayUI(QString svg) {
 
                     if (fs == 1) {
                         li->setTypeLigne(cop < 0 ? TL_LIE_V : (cop > 0) ? TL_LIE_M : TL_LIE_C);
-                        li->setOutlineColor((cop < 0) ? Qt::green : (cop > 0) ? QColor(180,0,0) : QColor(240,240,240)); //Qt::lightGray);
+                        li->setOutlineColor((cop < 0) ? Qt::green : (cop > 0) ? QColor(180,0,0) : QColor(240,240,240));
                         li->setOutlineWidth(1);
                         li->setCustomPen();
                         if (doSVG && pageOK) {
                             if (li->pen().color() == Qt::green) {
-                                svgPathMoveTo(pPlisV, se1);
-                                svgPathLineTo(pPlisV, se2);
+                                //svgPathMoveTo(pPlisV, se1);
+                                //svgPathLineTo(pPlisV, se2);
+                                drawLine(pPlisV, se1, se2);
+                                drawX(pPVS, se1, se2);
                             } else if (li->pen().color() == QColor(180,0,0)) {
-                                svgPathMoveTo(pPlisM, se1);
-                                svgPathLineTo(pPlisM, se2);
+                                //svgPathMoveTo(pPlisM, se1);
+                                //svgPathLineTo(pPlisM, se2);
+                                drawLine(pPlisM, se1, se2);
+                                drawX(pPMS, se1, se2);
                             }
                         }
 
@@ -1138,8 +1153,9 @@ void Unfold::displayUI(QString svg) {
                         li->setOutlineColor(Qt::red);
                         li->setCustomPen();
                         if (doSVG && pageOK) {
-                            svgPathMoveTo(pCoupes, se1);
-                            svgPathLineTo(pCoupes, se2);
+                            //svgPathMoveTo(pCoupes, se1);
+                            //svgPathLineTo(pCoupes, se2);
+                            drawLine(pCoupes, se1, se2);
                         }
                     }
 
@@ -1173,11 +1189,13 @@ void Unfold::displayUI(QString svg) {
                     li->setData(2, e.nF);
                     if (doSVG && pageOK) {
                         if (li->pen().color() == Qt::green) {
-                            pPlisV->move_to(se1.x(), se1.y());
-                            pPlisV->line_to(se2.x(), se2.y());
+                            //pPlisV->move_to(se1.x(), se1.y());
+                            //pPlisV->line_to(se2.x(), se2.y());
+                            drawLine(pPlisV, se1, se2);
+                            drawX(pPVS, se1, se2);
                         } else if (li->pen().color() == QColor(180,0,0)) {
-                            pPlisM->move_to(se1.x(), se1.y());
-                            pPlisM->line_to(se2.x(), se2.y());
+                            drawLine(pPlisM, se1, se2);
+                            drawX(pPMS, se1, se2);
                         }
                     }
                 }

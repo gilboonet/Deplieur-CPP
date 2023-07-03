@@ -36,6 +36,8 @@ qreal       direction (const QPointF&, const QPointF&);
 
 void        svgPathMoveTo(SVG::Path*, QPointF);
 void        svgPathLineTo(SVG::Path*, QPointF);
+void        drawLine(SVG::Path *, QPointF, QPointF);
+void        drawX(SVG::Path *, QPointF, QPointF);
 void        drawHersheyInt(SVG::Path *, QPointF, int, qreal, qreal);
 
 
