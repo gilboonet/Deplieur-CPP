@@ -222,16 +222,22 @@ void Unfold::load_OBJ(const QByteArray *donnees) {
                 faces.push_back(rfj);
                 nbFaces++;
             }
-        } else if(selem.starts_with("g ")) {
-            if(!groups[0].empty()) {
-                groups.push_back("");
-                gCourant++;
-            }
-        } else if(selem.starts_with("usemtl ")) {
+        }
+//        else if(selem.starts_with("g ")) {
+//            if(!groups[0].empty()) {
+//                groups.push_back("");
+//                gCourant++;
+//            }
+//        }
+        else if(selem.starts_with("usemtl ")) {
             std::stringstream ss(selem);
             std::string s;
             ss >> s;
             ss >> s;
+            if(!groups[0].empty()) {
+                groups.push_back("");
+                gCourant++;
+            }
             groups.back() = s;
         }
         elem = tsOBJ.readLine();
