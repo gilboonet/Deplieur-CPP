@@ -3,6 +3,7 @@
 
 #include "../svg.hpp"
 #include "triangle2d.h"
+#include <QColor>
 
 struct sedge {
     QPointF p1;
@@ -40,5 +41,43 @@ void        drawLine(SVG::Path *, QPointF, QPointF);
 void        drawX(SVG::Path *, QPointF, QPointF);
 void        drawHersheyInt(SVG::Path *, QPointF, int, qreal, qreal);
 
+const QColor gCOL[] = {
+    QColor::fromString("blue"),
+    QColor::fromString("green"),
+    QColor::fromString("yellow"),
+    QColor::fromString("orange"),
+    QColor::fromString("cyan"),
+    QColor::fromString("magenta"),
+    QColor::fromString("gray"),
+
+    QColor::fromString("darkRed"),
+    QColor::fromString("darkGreen"),
+    QColor::fromString("darkBlue"),
+    QColor::fromString("darkCyan"),
+    QColor::fromString("darkMagenta"),
+    QColor::fromString("darkYellow"),
+    QColor::fromString("darkGray"),
+
+    QColor::fromString("aliceblue"),
+    QColor::fromString("antiquewhite"),
+    QColor::fromString("aqua"),
+    QColor::fromString("aquamarine"),
+    QColor::fromString("azure"),
+    QColor::fromString("beige"),
+    QColor::fromString("bisque"),
+    QColor::fromString("blanchedalmond"),
+    QColor::fromString("blueviolet"),
+    QColor::fromString("brown"),
+    QColor::fromString("burlywood"),
+    QColor::fromString("cadetblue"),
+    QColor::fromString("chartreuse"),
+    QColor::fromString("chocolate"),
+    QColor::fromString("coral"),
+    QColor::fromString("cornflowerblue"),
+    QColor::fromString("cornsilk"),
+    QColor::fromString("crimson"),
+    QColor::fromString("darkgoldenrod"),
+    QColor::fromString("darkkhaki"),
+};
 
 #endif // CONST_H
