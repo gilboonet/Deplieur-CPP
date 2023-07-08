@@ -22,7 +22,7 @@ SOURCES += \
     numitem.cpp \
     page.cpp \
     piece.cpp \
-    titleitem.cpp \
+    pieceitem.cpp \
     triangle2d.cpp \
     triangle3d.cpp \
     unfold.cpp
@@ -40,7 +40,7 @@ HEADERS += \
     numitem.h \
     page.h \
     piece.h \
-    titleitem.h \
+    pieceitem.h \
     triangle2d.h \
     triangle3d.h \
     unfold.h

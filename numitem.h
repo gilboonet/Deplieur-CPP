@@ -4,13 +4,14 @@
 #include <QGraphicsSimpleTextItem>
 #include <QString>
 
-#include "titleitem.h"
+//#include "titleitem.h"
+#include "pieceitem.h"
 #include "unfold.h"
 
 class NumItem : public QGraphicsSimpleTextItem
 {
 public:
-    TitleItem *ti;
+    PieceItem *ti;
     int nF;
     int fid;
 

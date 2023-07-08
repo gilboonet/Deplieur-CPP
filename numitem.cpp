@@ -17,7 +17,8 @@ NumItem::NumItem(const QString text, int id1, int id2)
 
 void NumItem::mousePressEvent(QGraphicsSceneMouseEvent *)
 {
-    TitleItem* ti = static_cast<TitleItem*>(parentItem());
+    //TitleItem* ti = static_cast<TitleItem*>(parentItem());
+    PieceItem* ti = static_cast<PieceItem*>(parentItem());
     ti->donnees->changeLanguette(nF, fid);
 }
 

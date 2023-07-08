@@ -29,7 +29,8 @@
 #include "page.h"
 #include "flap.h"
 
-class TitleItem;
+//class TitleItem;
+class PieceItem;
 
 enum LINE_EVT { LE_CUT, LE_LNK };
 
@@ -84,7 +85,7 @@ public :
     QGraphicsLineItem*      flash;
     bool                    deja;
     bool                    optimiserNums;
-    TitleItem*              titleItem;
+    PieceItem*              pieceItem;
     int                     IdPieceCourante;
     QPointF                 pageDim;
     int                     pageId;
@@ -120,7 +121,7 @@ public :
     Copl*                   getCopl(int, int);
     Facette*                getFacette(const int);
     Piece*                  getPieceCourante();
-    void                    setPieceCourante(const int, TitleItem*);
+    void                    setPieceCourante(const int, PieceItem*);
     Page*                   getPage(const int);
     Piece*                  getPiece(const int);
     Flap*                   getFlap(const int, const int);
@@ -132,6 +133,9 @@ public :
     void                    changeLanguette(int, int);
     void                    reducePages();
     void                    pageFormat(int);
+    QPointF                 calculeCentrePiece(Piece);
+    std::vector<sedge>      calculeLignes(Piece);
+    QColor                  calculeCouleurPiece(Piece);
 };
 
 std::ostream& operator <<(std::ostream& os, const QPointF& v);
@@ -139,5 +143,6 @@ std::ostream& operator <<(std::ostream& os, const QVector3D& v);
 std::ostream& operator <<(std::ostream& os, const Triangle2d& t);
 std::ostream& operator <<(std::ostream& os, const Triangle3d& t);
 
+QList<QPointF> PtsDepuisLignesDeCoupe(std::vector<sedge>);
 
 #endif // UNFOLD_H

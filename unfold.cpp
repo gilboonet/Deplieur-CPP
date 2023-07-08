@@ -1,7 +1,8 @@
 #include "unfold.h"
 #include "lineitem.h"
-#include "titleitem.h"
+//#include "titleitem.h"
 #include "numitem.h"
+#include "pieceitem.h"
 
 #include <QCursor>
 #include <QFont>
@@ -417,9 +418,9 @@ Piece* Unfold::getPieceCourante() {
     return nullptr;
 }
 
-void Unfold::setPieceCourante(const int id, TitleItem *ti) {
+void Unfold::setPieceCourante(const int id, PieceItem *ti) {
     IdPieceCourante = id;
-    titleItem = ti;
+    pieceItem = ti;
 };
 
 struct pd {
@@ -854,7 +855,8 @@ void Unfold::syncUI() {
     if (deja) {
         for (auto&& it : rVue->scene()->items()) {
             if (it->flags() & QGraphicsItem::ItemIsMovable) {
-                TitleItem* ti = static_cast<TitleItem*>(it);
+                //TitleItem* ti = static_cast<TitleItem*>(it);
+                PieceItem* ti = static_cast<PieceItem*>(it);
                 Piece* pi = getPiece(ti->data(0).toInt());
                 if (pi) {
                     pi->O = QPointF(
@@ -879,20 +881,20 @@ void Unfold::displayUI(QString svg) {
     }
 
     reducePages();
+    recalculeNums();
 
     bool doSVG = false;
     QFont fTitre, fNum;
     QPen pTitre, pNum;
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    fTitre = QFont(fixedFont.family(), 15);
+    pTitre = QPen(Qt::blue, 1);
     SVG::SVG root;
     QPointF se1, se2;
 
     if (!svg.isEmpty()) {
         doSVG = true;
 
-        const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-
-        fTitre = QFont(fixedFont.family(), 15);
-        pTitre = QPen(Qt::blue, 2);
         fNum = QFont(fixedFont.family(), 9);
         pNum = QPen(Qt::black, 1);
 
@@ -970,74 +972,34 @@ void Unfold::displayUI(QString svg) {
         }
 
         for (auto&& piece : page.pieces) {
-            std::vector<sedge> pedges;
-            TitleItem *tit = new TitleItem(QString::number(piece.id+1), this);
-            tit->setData(0, piece.id);
-            scene->addItem(tit);
-            if (piece.id == IdPieceCourante)
-                tit->setSelected(true);
-            // calcule emplacement au centre de la pièce
-            QPointF cTIT{};
-            for (auto&& fn : piece.faceId)
-                cTIT += getFacette(fn)->triangle.centroid();
-            cTIT /= piece.faceId.size();
+            std::vector<sedge> pedges = calculeLignes(piece);
+            // construction du polygone depuis lLignes à partir de lLignes[0]
+            QPolygonF qpoly = QPolygonF(PtsDepuisLignesDeCoupe(pedges));
+            PieceItem *qp = new PieceItem(qpoly, piece.id, this);
+            qp->setBrush(QBrush(calculeCouleurPiece(piece)));
+            qp->setData(0, piece.id);
+            qp->setData(1, qp->pos().x());
+            qp->setData(2, qp->pos().y());
+            scene->addItem(qp);
 
-            // recherche du centre de face le plus proche
-            QPointF proche;
-            qreal dist = 10000;
-            for (auto&& fn : piece.faceId) {
-                qreal d = distance(cTIT, getFacette(fn)->triangle.centroid());
-                if (dist > d) {
-                    dist = d;
-                    proche = getFacette(fn)->triangle.centroid();
-                }
-            }
-            cTIT = proche;
+            //TitleItem *tit = new TitleItem(QString::number(piece.id+1), this);
+            QGraphicsSimpleTextItem *tit = new QGraphicsSimpleTextItem(QString::number(piece.id+1));
+            tit->setFont(fTitre);
+            tit->setPen(pTitre);
+            tit->setParentItem(qp);
 
+            QPointF cTIT = calculeCentrePiece(piece);
             QPointF tt = cmpo(cTIT) + piece.O + QPointF(cmpo(5), cmpo(5));
             QPointF b = QPointF(tit->boundingRect().width(), tit->boundingRect().height()) / 2;
             cTIT = tt - b;
             tit->setPos(cTIT);
             tit->setZValue(5);
-            tit->setData(1, cTIT.x());
-            tit->setData(2, cTIT.y());
             if (doSVG && pageOK) {
                 SVG::Path* tp = pageGroup->add_child<SVG::Path>();
                 tp->set_attr("id", QString("titre_%1").arg(piece.id+1).toStdString());
                 tp->set_attr("stroke", "indigo");
                 drawHersheyInt(tp, tt + QPointF(0, 11*0.75), piece.id+1, 0, 0.75);
             }
-
-            for (auto&& fn : piece.faceId) {
-                Triangle2d tt = cmpo(getFacette(fn)->triangle) + piece.O + QPointF(cmpo(5), cmpo(5));
-                for (int i = 0; i < 3 ; i++){
-                    // facette's edges and neighbors #
-                    int nF = getFacette(fn)->neighbors[i].nF;
-                    bool ok = true;
-                    QPointF p1 = tt.point(i) - cTIT,
-                            p2 = tt.point(next(i)) - cTIT;
-                    for (auto&& e: pedges) {
-                        if (fn == e.nF && nF == e.fid)
-                            if ((eq(e.p1, p1) && eq(e.p2, p2)) || (eq(e.p1, p2) && eq(e.p2, p1))) {
-                                e.nb++;
-                                ok = false;
-                                break;
-                            }
-                    }
-                    if (ok) {
-                        sedge edge;
-                        edge.p1 = p1;
-                        edge.p2 = p2;
-                        edge.fid = fn;
-                        edge.nid = i;
-                        edge.nF = nF;
-                        edge.nb = 1;
-                        pedges.push_back(edge);
-                    }
-                }
-            }
-
-            QList<QLineF> lLignes;
 
             for (auto&& e : pedges) {
                 if (e.nb == 1) {
@@ -1048,8 +1010,8 @@ void Unfold::displayUI(QString svg) {
                 LineItem *li = new LineItem();
                 li->setLine(QLineF(e.p1, e.p2));
                 if (doSVG && pageOK) {
-                    se1 = e.p1 + tit->pos();
-                    se2 = e.p2 + tit->pos();
+                    se1 = e.p1 + qp->pos();
+                    se2 = e.p2 + qp->pos();
                 }
 
                 int cop = getFacette(e.fid)->findNeighbor(e.nF)->cop;
@@ -1057,8 +1019,6 @@ void Unfold::displayUI(QString svg) {
                     li->setData(0, 1);
                     li->setData(1, e.fid);
                     li->setData(2, e.nF);
-
-                    lLignes << QLineF(e.p1, e.p2);
 
                     if (modeLanguettes == 1) {
                         fs = 0;
@@ -1137,14 +1097,14 @@ void Unfold::displayUI(QString svg) {
                             path.lineTo(e.p2);
                         QGraphicsPathItem* pi = scene->addPath(path);
                         pi->setZValue(2);
-                        pi->setParentItem(tit);
+                        pi->setParentItem(qp);
                         pi->setPen(QPen(Qt::red, 2));
 
                         if (doSVG && pageOK) {
                             svgPathMoveTo(pCoupes, se1);
                             if(!eq(e.p1, P1))
-                                svgPathLineTo(pCoupes, P1 + tit->pos());
-                            svgPathLineTo(pCoupes, P2 + tit->pos());
+                                svgPathLineTo(pCoupes, P1 + qp->pos());
+                            svgPathLineTo(pCoupes, P2 + qp->pos());
                             if(!eq(e.p2, P2))
                                 svgPathLineTo(pCoupes, se2);
                         }
@@ -1173,9 +1133,9 @@ void Unfold::displayUI(QString svg) {
                         QPointF c = middle(e.p1, e.p2) - b;
                         ti->setPos(c);
                         ti->setZValue(2);
-                        ti->setParentItem(tit);
+                        ti->setParentItem(qp);
                         if (doSVG && pageOK) {
-                            drawHersheyInt(pTextes, c + b + tit->pos()
+                            drawHersheyInt(pTextes, c + b + qp->pos()
                             , n, 360-deg, 0.3);
                         }
                     }
@@ -1200,75 +1160,10 @@ void Unfold::displayUI(QString svg) {
                     }
                 }
                 li->setZValue(2);
-                li->setParentItem(tit);
+                li->setParentItem(qp);
             }
             tit->setZValue(1);
 
-            // construction du polygone depuis lLignes à partir de lLignes[0]
-            QPointF premPoint = lLignes.first().p1();
-            QPointF dernPoint = lLignes.first().p2();
-            QList<QPointF> lPoints;
-            lPoints << premPoint;
-            lPoints << dernPoint;
-            lLignes.removeFirst();
-
-            while (lLignes.size() > 0) {
-                for (QList<QLineF>::const_iterator i = lLignes.constBegin(); i != lLignes.constEnd(); i++) {
-                    QLineF l = *i;
-                    if (eq(l.p1(), premPoint)) {
-                        premPoint = l.p2();
-                        lPoints.prepend(premPoint);
-                        lLignes.erase(i);
-                        break;
-                    } else if (eq(l.p2(), premPoint)) {
-                        premPoint = l.p1();
-                        lPoints.prepend(premPoint);
-                        lLignes.erase(i);
-                        break;
-                    } else if (eq(l.p1(), dernPoint)) {
-                        dernPoint = l.p2();
-                        lPoints.append(dernPoint);
-                        lLignes.erase(i);
-                        break;
-                    } else if (eq(l.p2(), dernPoint)) {
-                        dernPoint = l.p1();
-                        lPoints.append(dernPoint);
-                        lLignes.erase(i);
-                        break;
-                    }
-                }
-            }
-
-            QPolygonF qpoly = QPolygonF(lPoints);
-            //qpoly.translate(cTIT*-1);
-            QGraphicsPolygonItem *qp = new QGraphicsPolygonItem(qpoly);
-            QColor c;
-            int ng = getFacette(piece.faceId[0])->group;
-            QString s = QString::fromStdString(groups[ng]);
-            if (QColor::isValidColorName(s))
-                c = QColor::fromString(s);
-            else {
-                QStringList sl = s.split("_", Qt::SkipEmptyParts);
-                if (sl.size() >= 3) {
-                    bool ok0, ok1, ok2;
-                    int r, v, b;
-                    r = sl.at(sl.size() -3).toInt(&ok0);
-                    v = sl.at(sl.size() -2).toInt(&ok1);
-                    b = sl.at(sl.size() -1).toInt(&ok2);
-                    if(ok0 && ok1 && ok2) {
-                        c = QColor(r, v, b);
-                    }
-                    else
-                        c = gCOL[getFacette(piece.faceId[0])->group];
-                }
-                else
-                    c = gCOL[getFacette(piece.faceId[0])->group];
-            }
-            c.setAlpha(160);
-            qp->setBrush(QBrush(c));
-            qp->setPen(Qt::NoPen);
-            qp->setParentItem(tit);
-            qp->setZValue(0);
         }
         dxP += pageDim.x();
     }
@@ -1471,4 +1366,127 @@ void Unfold::changeLanguette(int f, int n) {
         flap->state = -1 * flap->state;
         displayUI();
     }
+}
+
+QPointF Unfold::calculeCentrePiece(Piece piece){
+    QPointF cTIT{};
+    for (auto&& fn : piece.faceId)
+        cTIT += getFacette(fn)->triangle.centroid();
+    cTIT /= piece.faceId.size();
+
+    // recherche du centre de face le plus proche
+    QPointF proche;
+    qreal dist = 10000;
+    for (auto&& fn : piece.faceId) {
+        qreal d = distance(cTIT, getFacette(fn)->triangle.centroid());
+        if (dist > d) {
+            dist = d;
+            proche = getFacette(fn)->triangle.centroid();
+        }
+    }
+    return proche;
+}
+
+std::vector<sedge> Unfold::calculeLignes(Piece piece) {
+    std::vector<sedge> pe;
+    for (auto&& fn : piece.faceId) {
+        Triangle2d tt = cmpo(getFacette(fn)->triangle) + piece.O + QPointF(cmpo(5), cmpo(5));
+        for (int i = 0; i < 3 ; i++){
+            // facette's edges and neighbors #
+            int nF = getFacette(fn)->neighbors[i].nF;
+            bool ok = true;
+            QPointF p1 = tt.point(i),
+                    p2 = tt.point(next(i));
+            for (auto&& e: pe) {
+                if (fn == e.nF && nF == e.fid)
+                    if ((eq(e.p1, p1) && eq(e.p2, p2)) || (eq(e.p1, p2) && eq(e.p2, p1))) {
+                        e.nb++;
+                        ok = false;
+                        break;
+                    }
+            }
+            if (ok) {
+                sedge edge;
+                edge.p1 = p1;
+                edge.p2 = p2;
+                edge.fid = fn;
+                edge.nid = i;
+                edge.nF = nF;
+                edge.nb = 1;
+                pe.push_back(edge);
+            }
+        }
+    }
+    return pe;
+}
+
+QColor Unfold::calculeCouleurPiece(Piece p) {
+    QColor c;
+    int ng = getFacette(p.faceId[0])->group;
+    QString s = QString::fromStdString(groups[ng]);
+    if (QColor::isValidColorName(s))
+        c = QColor::fromString(s);
+    else {
+        QStringList sl = s.split("_", Qt::SkipEmptyParts);
+        if (sl.size() >= 3) {
+            bool ok0, ok1, ok2;
+            int r, v, b;
+            r = sl.at(sl.size() -3).toInt(&ok0);
+            v = sl.at(sl.size() -2).toInt(&ok1);
+            b = sl.at(sl.size() -1).toInt(&ok2);
+            if(ok0 && ok1 && ok2) {
+                c = QColor(r, v, b);
+            }
+            else
+                c = gCOL[ng];
+        }
+        else
+            c = gCOL[ng];
+    }
+    c.setAlpha(160);
+    return c;
+}
+
+QList<QPointF> PtsDepuisLignesDeCoupe(std::vector<sedge> pe) {
+    QList<QLineF> lLignes;
+    for(auto&& e:pe){
+        if (e.nb == 1)
+            lLignes << QLineF(e.p1, e.p2);
+    }
+
+    QPointF premPoint = lLignes.first().p1();
+    QPointF dernPoint = lLignes.first().p2();
+    QList<QPointF> lPoints;
+    lPoints << premPoint;
+    lPoints << dernPoint;
+    lLignes.removeFirst();
+
+    while (lLignes.size() > 0) {
+        for (QList<QLineF>::const_iterator i = lLignes.constBegin(); i != lLignes.constEnd(); i++) {
+            QLineF l = *i;
+            if (eq(l.p1(), premPoint)) {
+                premPoint = l.p2();
+                lPoints.prepend(premPoint);
+                lLignes.erase(i);
+                break;
+            } else if (eq(l.p2(), premPoint)) {
+                premPoint = l.p1();
+                lPoints.prepend(premPoint);
+                lLignes.erase(i);
+                break;
+            } else if (eq(l.p1(), dernPoint)) {
+                dernPoint = l.p2();
+                lPoints.append(dernPoint);
+                lLignes.erase(i);
+                break;
+            } else if (eq(l.p2(), dernPoint)) {
+                dernPoint = l.p1();
+                lPoints.append(dernPoint);
+                lLignes.erase(i);
+                break;
+            }
+        }
+    }
+    lLignes.clear();
+    return lPoints;
 }

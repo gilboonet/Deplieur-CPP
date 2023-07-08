@@ -68,7 +68,7 @@ void LineItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
     int a = data(1).toInt();
     int b = data(2).toInt();
 
-    TitleItem * ti = static_cast<TitleItem*>(parentItem());
+    PieceItem * ti = static_cast<PieceItem*>(parentItem());
     if (!ti->donnees->flash)
         return;
 
@@ -89,7 +89,7 @@ void LineItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
 void LineItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 {
     setCustomPen();
-    TitleItem * ti = static_cast<TitleItem*>(parentItem());
+    PieceItem * ti = static_cast<PieceItem*>(parentItem());
     if (ti->donnees->flash)
         ti->donnees->flash->setVisible(false);
 }
@@ -97,13 +97,13 @@ void LineItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 void LineItem::mousePressEvent(QGraphicsSceneMouseEvent *)
 {
     //qDebug() << "Custom item clicked.";
-    TitleItem * ti = static_cast<TitleItem*>(parentItem());
+    PieceItem * ti = static_cast<PieceItem*>(parentItem());
 
     int type = data(0).toInt();
     int a = data(1).toInt();
     int b = data(2).toInt();
 
-    qInfo("LINE ACTION : %d %d %d", type, a, b);
+    //qInfo("LINE ACTION : %d %d %d", type, a, b);
 
     type == -1 ? ti->donnees->splitPiece(a, b) : ti->donnees->stickPiece(a, b);
 }

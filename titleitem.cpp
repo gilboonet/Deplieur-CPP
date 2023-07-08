@@ -1,6 +1,5 @@
 #include "titleitem.h"
 
-//#include <QFocusEvent>
 #include <QFont>
 #include <QObject>
 #include <QPen>
@@ -18,11 +17,12 @@ TitleItem::TitleItem(const QString text, Unfold *d) :
 {
     setFont(QFont("Courier", 15));
     setPen(QPen(Qt::blue, 1));
-    setAcceptHoverEvents(true);
-    setCursor(QCursor(Qt::OpenHandCursor));
-    setFlags(QGraphicsItem::ItemIsFocusable
-    | QGraphicsItem::ItemIsMovable
-    | QGraphicsItem::ItemIsSelectable);
+    //setAcceptHoverEvents(true);
+    //setCursor(QCursor(Qt::OpenHandCursor));
+    //setFlags(QGraphicsItem::ItemIsFocusable
+    //| QGraphicsItem::ItemIsMovable
+    //| QGraphicsItem::ItemIsSelectable);
+    //);
 
 }
 
