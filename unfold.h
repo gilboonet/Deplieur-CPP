@@ -29,7 +29,6 @@
 #include "page.h"
 #include "flap.h"
 
-//class TitleItem;
 class PieceItem;
 
 enum LINE_EVT { LE_CUT, LE_LNK };
@@ -83,6 +82,7 @@ public :
     std::vector<Page>       pages;
     QGraphicsView*          rVue;
     QGraphicsLineItem*      flash;
+    QGraphicsLineItem*      poigneeR;
     bool                    deja;
     bool                    optimiserNums;
     PieceItem*              pieceItem;
@@ -93,7 +93,6 @@ public :
     int                     hLanguettes; // 15 par défaut
     QByteArray              svgRoot;
 
-    //void                    display_unfold(std::ostream &);
     void                    display_facettes(std::ostream&);
     void                    save_unfold(std::stringstream&);
     void                    load_DAT(const QByteArray *donnees);
@@ -116,16 +115,16 @@ public :
     void                    unfolding();
     int                     getNbFaces();
     void                    displayUI(QString = "");
-    void                    syncUI();
     void                    reajuste_pieces();
     Copl*                   getCopl(int, int);
     Facette*                getFacette(const int);
     Piece*                  getPieceCourante();
-    void                    setPieceCourante(const int, PieceItem*);
+    void                    setPieceCourante(PieceItem*);
     Page*                   getPage(const int);
     Piece*                  getPiece(const int);
     Flap*                   getFlap(const int, const int);
     void                    rotatePieceCourante(int);
+    void                    rotatePieceCourante(qreal);
     void                    deplacePieceCourante(int, int);
     void                    stickPiece(int, int);
     void                    splitPiece(int, int);
@@ -144,5 +143,6 @@ std::ostream& operator <<(std::ostream& os, const Triangle2d& t);
 std::ostream& operator <<(std::ostream& os, const Triangle3d& t);
 
 QList<QPointF> PtsDepuisLignesDeCoupe(std::vector<sedge>);
+void sceneSelChange();
 
 #endif // UNFOLD_H

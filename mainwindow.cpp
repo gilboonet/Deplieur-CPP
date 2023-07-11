@@ -243,7 +243,6 @@ void MainWindow::ouvrir() {
 
 void MainWindow::sauver() {
     if (unfold) {
-        unfold->syncUI();
         std::stringstream ss;
         unfold->save_unfold(ss);
         QFileDialog::saveFileContent(QByteArray::fromStdString(ss.str()), "gabarit.dat");
@@ -266,27 +265,33 @@ void MainWindow::unlockMenus()
 
 void MainWindow::tournerD() {
     unfold->rotatePieceCourante(-1);
+    unfold->displayUI();
 }
 
 void MainWindow::tournerG() {
     unfold->rotatePieceCourante(1);
+    unfold->displayUI();
 }
 
 
 void MainWindow::tournerD05() {
     unfold->rotatePieceCourante(-5);
+    unfold->displayUI();
 }
 
 void MainWindow::tournerG05() {
     unfold->rotatePieceCourante(5);
+    unfold->displayUI();
 }
 
 void MainWindow::tournerD15() {
     unfold->rotatePieceCourante(-15);
+    unfold->displayUI();
 }
 
 void MainWindow::tournerG15() {
     unfold->rotatePieceCourante(15);
+    unfold->displayUI();
 }
 
 void MainWindow::monter() {

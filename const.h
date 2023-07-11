@@ -31,6 +31,11 @@ QPointF     cmpo(QPointF);
 Triangle2d  cmpo(Triangle2d);
 QPointF     middle (QPointF, QPointF);
 qreal       distance(const QPointF&, const QPointF&);
+
+int         CarreDistance(QPointF a, QPointF b);
+void        calcAngles(QPointF A, QPointF B, QPointF C);
+
+int         getAngleABC( QPointF, QPointF, QPointF);
 qreal       angle(const QPointF&, const QPointF&);
 QPointF     rotatePt(const QPointF&, const QPointF&, const qreal);
 qreal       direction (const QPointF&, const QPointF&);

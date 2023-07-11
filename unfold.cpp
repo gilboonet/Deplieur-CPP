@@ -1,8 +1,9 @@
 #include "unfold.h"
 #include "lineitem.h"
-//#include "titleitem.h"
 #include "numitem.h"
 #include "pieceitem.h"
+#include "poigneerotation.h"
+#include "sceneui.h"
 
 #include <QCursor>
 #include <QFont>
@@ -418,9 +419,9 @@ Piece* Unfold::getPieceCourante() {
     return nullptr;
 }
 
-void Unfold::setPieceCourante(const int id, PieceItem *ti) {
-    IdPieceCourante = id;
-    pieceItem = ti;
+void Unfold::setPieceCourante(PieceItem *pi) {
+    pieceItem = pi;
+    IdPieceCourante = pi->piece->id;
 };
 
 struct pd {
@@ -707,7 +708,7 @@ int Unfold::pieceNextID() {
 
 void Unfold::unfolding() {
     int xMax = 0;
-    int nb = 0;
+    //int nb = 0;
     for(size_t nG = 0; nG < groups.size(); nG++) {
         Facette* prochainLibre;
         do {
@@ -743,7 +744,7 @@ void Unfold::unfolding() {
                                 // ajouter
                                 if(ok) {
                                     piece.ajouteFace(*fn, f, page.id, piece.id);
-                                    nb++;
+                                    //nb++;
                                     break;
                                 }
                             }
@@ -838,7 +839,11 @@ void Unfold::rotatePieceCourante(int delta) {
             facette->triangle.rotate(triOrig.point(n->id), angle);
         }
     }
-    displayUI();
+    //displayUI();
+}
+
+void Unfold::rotatePieceCourante(qreal delta) {
+    rotatePieceCourante(static_cast<int>(delta));
 }
 
 void Unfold::deplacePieceCourante(int deltaX, int deltaY) {
@@ -851,35 +856,7 @@ void Unfold::deplacePieceCourante(int deltaX, int deltaY) {
     }
 }
 
-void Unfold::syncUI() {
-    if (deja) {
-        for (auto&& it : rVue->scene()->items()) {
-            if (it->flags() & QGraphicsItem::ItemIsMovable) {
-                //TitleItem* ti = static_cast<TitleItem*>(it);
-                PieceItem* ti = static_cast<PieceItem*>(it);
-                Piece* pi = getPiece(ti->data(0).toInt());
-                if (pi) {
-                    pi->O = QPointF(
-                        pi->O.x() - ti->data(1).toFloat() + ti->pos().x(),
-                        pi->O.y() - ti->data(2).toFloat() + ti->pos().y()
-                    );
-                    ti->setData(1, pi->O.x());
-                    ti->setData(2, pi->O.y());
-                }
-            }
-        }
-    } else {
-        deja = true;
-    }
-}
-
 void Unfold::displayUI(QString svg) {
-    if (deja) {
-        syncUI();
-    } else {
-        deja = true;
-    }
-
     reducePages();
     recalculeNums();
 
@@ -907,12 +884,22 @@ void Unfold::displayUI(QString svg) {
         root.style("path").set_attr("fill", "none").set_attr("stroke-width", "0.15mm");
     }
 
-    QGraphicsScene* scene = new QGraphicsScene;
-    flash = new QGraphicsLineItem;
+    //QGraphicsScene* scene = new QGraphicsScene;
+    SceneUI* scene = new SceneUI();
+    // connect(this, &QGraphicsScene::selectionChanged, this, &SceneUI::sceneSelChange);
+//void SceneUI::sceneSelChange() {
+//    qInfo() << "selection changee";
+//}
+    flash = new QGraphicsLineItem();
     flash->setVisible(false);
     flash->setPen(QPen(Qt::green, 2));
     flash->setZValue(10);
     scene->addItem(flash);
+//    poigneeR = new QGraphicsLineItem();
+//    poigneeR->setVisible(false);
+//    poigneeR->setZValue(10);
+//    scene->addItem(poigneeR);
+
     int dxP = 0;
     int fs = 0;
     int max_nO = 1;
@@ -929,7 +916,8 @@ void Unfold::displayUI(QString svg) {
     SVG::Path *pPlisM = nullptr, *pPlisV = nullptr, *pPMS, *pPVS;
 
     for (auto&& page : pages) {
-        scene->addRect(cmpo(2.5), cmpo(2.5), cmpo(pageDim.x()-5), cmpo(pageDim.y()-5))->setPos(cmpo(dxP), 0);
+        scene->addRect(cmpo(2.5), cmpo(2.5), cmpo(pageDim.x()-5),
+                       cmpo(pageDim.y()-5))->setPos(cmpo(dxP), 0);
         pageGroup = nullptr;
         pCoupes = nullptr;
         pPlisM = nullptr;
@@ -975,25 +963,31 @@ void Unfold::displayUI(QString svg) {
             std::vector<sedge> pedges = calculeLignes(piece);
             // construction du polygone depuis lLignes à partir de lLignes[0]
             QPolygonF qpoly = QPolygonF(PtsDepuisLignesDeCoupe(pedges));
-            PieceItem *qp = new PieceItem(qpoly, piece.id, this);
+            PieceItem *qp = new PieceItem(qpoly, this, &piece);
             qp->setBrush(QBrush(calculeCouleurPiece(piece)));
             qp->setData(0, piece.id);
             qp->setData(1, qp->pos().x());
             qp->setData(2, qp->pos().y());
             scene->addItem(qp);
 
-            //TitleItem *tit = new TitleItem(QString::number(piece.id+1), this);
-            QGraphicsSimpleTextItem *tit = new QGraphicsSimpleTextItem(QString::number(piece.id+1));
+            QGraphicsSimpleTextItem *tit = new QGraphicsSimpleTextItem(QString::number(piece.id+1), qp);
             tit->setFont(fTitre);
             tit->setPen(pTitre);
-            tit->setParentItem(qp);
 
             QPointF cTIT = calculeCentrePiece(piece);
             QPointF tt = cmpo(cTIT) + piece.O + QPointF(cmpo(5), cmpo(5));
-            QPointF b = QPointF(tit->boundingRect().width(), tit->boundingRect().height()) / 2;
+            QPointF b = tit->boundingRect().center();
             cTIT = tt - b;
             tit->setPos(cTIT);
             tit->setZValue(5);
+
+//            if (IdPieceCourante == piece.id) {
+//                PoigneeRotation *pX = new PoigneeRotation(QRectF(cTIT.x()+b.x()+150, cTIT.y()+b.y(), 5, 5), qp, this);
+//                poigneeR->setLine(QLineF(cTIT + b, pX->rect().center()));
+//                poigneeR->setParentItem(qp);
+//                poigneeR->setVisible(true);
+//            }
+
             if (doSVG && pageOK) {
                 SVG::Path* tp = pageGroup->add_child<SVG::Path>();
                 tp->set_attr("id", QString("titre_%1").arg(piece.id+1).toStdString());
@@ -1095,9 +1089,8 @@ void Unfold::displayUI(QString svg) {
                         path.lineTo(P2);
                         if(!eq(e.p2, P2))
                             path.lineTo(e.p2);
-                        QGraphicsPathItem* pi = scene->addPath(path);
+                        QGraphicsPathItem* pi = new QGraphicsPathItem(path, qp);
                         pi->setZValue(2);
-                        pi->setParentItem(qp);
                         pi->setPen(QPen(Qt::red, 2));
 
                         if (doSVG && pageOK) {
@@ -1122,7 +1115,6 @@ void Unfold::displayUI(QString svg) {
 
                     Edge * edg = edgeGet(e.nF, e.fid);
                     if (edg) {
-                        //int n = optimiserNums ? edg->nO : edg->nE;
                         int n = edg->nO;
                         NumItem *ti = new NumItem(QString::number(n), e.nF, e.fid);
                         QPointF b = QPointF(ti->boundingRect().width()/2, ti->boundingRect().height());
@@ -1378,10 +1370,11 @@ QPointF Unfold::calculeCentrePiece(Piece piece){
     QPointF proche;
     qreal dist = 10000;
     for (auto&& fn : piece.faceId) {
-        qreal d = distance(cTIT, getFacette(fn)->triangle.centroid());
+        QPointF c = getFacette(fn)->triangle.centroid();
+        qreal d = distance(cTIT, c);
         if (dist > d) {
             dist = d;
-            proche = getFacette(fn)->triangle.centroid();
+            proche = c;
         }
     }
     return proche;

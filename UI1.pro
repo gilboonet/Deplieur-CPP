@@ -23,6 +23,8 @@ SOURCES += \
     page.cpp \
     piece.cpp \
     pieceitem.cpp \
+    poigneerotation.cpp \
+    sceneui.cpp \
     triangle2d.cpp \
     triangle3d.cpp \
     unfold.cpp
@@ -41,6 +43,8 @@ HEADERS += \
     page.h \
     piece.h \
     pieceitem.h \
+    poigneerotation.h \
+    sceneui.h \
     triangle2d.h \
     triangle3d.h \
     unfold.h

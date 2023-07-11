@@ -3,6 +3,8 @@
 #include <QtMath>
 #include <QString>
 
+#include <QDebug>
+
 #include "const.h"
 
 int prev(const int n) { // returns previous value from triplet(0,1,2)
@@ -27,6 +29,56 @@ qreal radToDeg(qreal r) {
 
 qreal degToRad(qreal d) {
     return d * std::numbers::pi / 180;
+}
+
+// returns square of distance b/w two points0
+int CarreDistance(QPointF a, QPointF b)
+{
+    qreal xDiff = a.x() - b.x();
+    qreal yDiff = a.y() - b.y();
+
+    int r = static_cast<int> (xDiff*xDiff + yDiff*yDiff);
+    return r;
+}
+void calcAngles(QPointF A, QPointF B, QPointF C)
+{
+    // Square of lengths be a2, b2, c2
+    int a2 = CarreDistance(B, C);
+    int b2 = CarreDistance(A, C);
+    int c2 = CarreDistance(A, B);
+
+    // length of sides be a, b, c
+    qreal a = sqrt(a2);
+    qreal b = sqrt(b2);
+    qreal c = sqrt(c2);
+
+    // From Cosine law
+    qreal alpha = acos((b2 + c2 - a2)/(2*b*c));
+    qreal beta = acos((a2 + c2 - b2)/(2*a*c));
+    qreal gamma = acos((a2 + b2 - c2)/(2*a*b));
+
+    // Converting to degree
+    alpha = alpha * 180 / PI;
+    beta = beta * 180 / PI;
+    gamma = gamma * 180 / PI;
+
+    // printing all the angles
+    qDebug() << "alpha : " << alpha << "beta : " << beta << "gamma : " << gamma;
+}
+
+int getAngleABC( QPointF a, QPointF b, QPointF c)
+{
+    QPointF ab = b - a;
+    QPointF cb = b - c;
+
+    qreal dot = (ab.x() * cb.x() + ab.y() * cb.y()); // dot product
+    qreal cross = (ab.x() * cb.y() - ab.y() * cb.x()); // cross product
+
+    qreal alpha = atan2(cross, dot);
+
+    int r = static_cast<int>(radToDeg(floor(alpha * 180. / std::numbers::pi + 0.5)));
+    r = r % 360;
+    return r;
 }
 
 qreal calc_angle(QPointF a, QPointF b, QPointF c) {
