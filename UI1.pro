@@ -24,10 +24,10 @@ SOURCES += \
     piece.cpp \
     pieceitem.cpp \
     poigneerotation.cpp \
-    sceneui.cpp \
     triangle2d.cpp \
     triangle3d.cpp \
-    unfold.cpp
+    unfold.cpp \
+    vueui.cpp
 
 HEADERS += \
     const.h \
@@ -44,10 +44,10 @@ HEADERS += \
     piece.h \
     pieceitem.h \
     poigneerotation.h \
-    sceneui.h \
     triangle2d.h \
     triangle3d.h \
-    unfold.h
+    unfold.h \
+    vueui.h
 
 FORMS += \
     dialognouveau.ui \

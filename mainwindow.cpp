@@ -1,6 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include "lineitem.h"
+
+#include <QGraphicsScene>
+#include <QGridLayout>
+#include "vueui.h"
 
 #include <QActionGroup>
 #include <QDesktopServices>
@@ -16,6 +21,19 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    QGridLayout *gridLayout;
+
+    gridLayout = new QGridLayout(centralWidget());
+    gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+    auto scene = new QGraphicsScene(this);
+    vue = new vueUI();
+    vue->setInteractive(true);
+    vue->setDragMode(QGraphicsView::RubberBandDrag);
+    vue->setRubberBandSelectionMode(Qt::IntersectsItemShape);
+    vue->setScene(scene);
+    gridLayout->addWidget(vue);
+
     zoomNormal();
 
     connect(ui->actionOuvrir, &QAction::triggered, this, &MainWindow::ouvrir);
@@ -189,7 +207,7 @@ void MainWindow::lanceNouveau() {
             return;
         } else {
             RN_rep r = dN->retourneEdite();
-            unfold = new Unfold(obj.toStdString(), "", "", ui->graphicsView, &donnees, r.b);
+            unfold = new Unfold(obj.toStdString(), "", "", vue, &donnees, r.b);
             switch(r.a) {
                 case 0 : pageFormat_A3(); break;
                 case 1 : pageFormat_A4(); break;
@@ -205,6 +223,7 @@ void MainWindow::lanceNouveau() {
             unfold->init_flaps();
             unfold->displayUI();
             unlockMenus();
+            qInfo() << "apres unlockmenus";
         }
     };
 
@@ -217,7 +236,7 @@ void MainWindow::ouvrir() {
             // Aucun fichier sélectionné
             return;
         } else {
-            unfold = new Unfold("", dat.toStdString(), "", ui->graphicsView, &donnees, 1.0);
+            unfold = new Unfold("", dat.toStdString(), "", vue, &donnees, 1.0);
             switch(unfold->pageId) {
                 case 4 : pageFormat_A4(); break;
                 case 3 : pageFormat_A3(); break;
@@ -312,13 +331,13 @@ void MainWindow::gauche() {
 
 void MainWindow::zoomNormal()
 {
-    ui->graphicsView->resetTransform();
+    vue->resetTransform();
 }
 
 void MainWindow::zoomPlus() {
-    ui->graphicsView->scale(1.25, 1.25);
+    vue->scale(1.25, 1.25);
 }
 
 void MainWindow::zoomMoins() {
-    ui->graphicsView->scale(0.8, 0.8);
+    vue->scale(0.8, 0.8);
 }

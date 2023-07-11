@@ -14,41 +14,9 @@
    <string>Deplieur UI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QGraphicsView" name="graphicsView">
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
-      <property name="verticalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOn</enum>
-      </property>
-      <property name="horizontalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOn</enum>
-      </property>
-      <property name="sizeAdjustPolicy">
-       <enum>QAbstractScrollArea::AdjustToContents</enum>
-      </property>
-      <property name="backgroundBrush">
-       <brush brushstyle="NoBrush">
-        <color alpha="255">
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-       </brush>
-      </property>
-      <property name="sceneRect">
-       <rectf>
-        <x>0.000000000000000</x>
-        <y>0.000000000000000</y>
-        <width>0.000000000000000</width>
-        <height>0.000000000000000</height>
-       </rectf>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -159,6 +127,7 @@
      <string>Aide</string>
     </property>
     <addaction name="actionWiki"/>
+    <addaction name="actionVideos"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuAffichage"/>
@@ -341,7 +310,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Optimiser numéros</string>
+    <string>Optimiser nums</string>
    </property>
   </action>
   <action name="actionA4">
@@ -507,6 +476,11 @@
   <action name="actionWiki">
    <property name="text">
     <string>Wiki</string>
+   </property>
+  </action>
+  <action name="actionVideos">
+   <property name="text">
+    <string>Videos</string>
    </property>
   </action>
  </widget>

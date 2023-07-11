@@ -10,7 +10,7 @@
 #include <numbers>
 #include <ostream>
 #include <QGraphicsSimpleTextItem>
-#include <QGraphicsView>
+#include "vueui.h"
 #include <QPointF>
 #include <QString>
 #include <QVector3D>
@@ -77,10 +77,10 @@ private :
 
 public :
     Unfold();
-    Unfold(std::string, std::string, std::string, QGraphicsView*, const QByteArray *, qreal ech);
+    Unfold(std::string, std::string, std::string, vueUI*, const QByteArray *, qreal ech);
 
     std::vector<Page>       pages;
-    QGraphicsView*          rVue;
+    vueUI*                  rVue;
     QGraphicsLineItem*      flash;
     QGraphicsLineItem*      poigneeR;
     bool                    deja;

@@ -3,7 +3,7 @@
 #include "numitem.h"
 #include "pieceitem.h"
 #include "poigneerotation.h"
-#include "sceneui.h"
+//#include "sceneui.h"
 
 #include <QCursor>
 #include <QFont>
@@ -13,7 +13,7 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsScene>
 #include <QGraphicsSimpleTextItem>
-#include <QGraphicsView>
+#include "vueui.h"
 #include <QLineF>
 #include <QList>
 #include <QObject>
@@ -781,7 +781,7 @@ int Unfold::getNbFaces() { return nbFaces;}
 Unfold::Unfold() {}
 
 Unfold::Unfold(std::string fOBJ, std::string fDAT, std::string fSVG,
-    QGraphicsView* vue, const QByteArray *donnees, qreal ech = 1.0) :
+    vueUI* vue, const QByteArray *donnees, qreal ech = 1.0) :
     fnOBJ(fOBJ), fnDAT(fDAT), fnSVG(fSVG), rVue(vue) {
 
     deja = false;
@@ -884,12 +884,7 @@ void Unfold::displayUI(QString svg) {
         root.style("path").set_attr("fill", "none").set_attr("stroke-width", "0.15mm");
     }
 
-    //QGraphicsScene* scene = new QGraphicsScene;
-    SceneUI* scene = new SceneUI();
-    // connect(this, &QGraphicsScene::selectionChanged, this, &SceneUI::sceneSelChange);
-//void SceneUI::sceneSelChange() {
-//    qInfo() << "selection changee";
-//}
+    QGraphicsScene* scene = new QGraphicsScene;
     flash = new QGraphicsLineItem();
     flash->setVisible(false);
     flash->setPen(QPen(Qt::green, 2));

@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QGraphicsScene>
 
 #include "unfold.h"
 #include "dialognouveau.h"
@@ -77,7 +76,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene *Scene;
+    //QGraphicsScene *scene;
     DialogNouveau *dN;
+    vueUI *vue;
 };
+
 #endif // MAINWINDOW_H
