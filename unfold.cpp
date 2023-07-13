@@ -3,7 +3,6 @@
 #include "numitem.h"
 #include "pieceitem.h"
 #include "poigneerotation.h"
-//#include "sceneui.h"
 
 #include <QCursor>
 #include <QFont>
@@ -761,7 +760,6 @@ void Unfold::unfolding() {
             }
         } while(prochainLibre);
     }
-
     reajuste_pieces();
 }
 
@@ -781,7 +779,7 @@ int Unfold::getNbFaces() { return nbFaces;}
 Unfold::Unfold() {}
 
 Unfold::Unfold(std::string fOBJ, std::string fDAT, std::string fSVG,
-    vueUI* vue, const QByteArray *donnees, qreal ech = 1.0) :
+    QGraphicsView* vue, const QByteArray *donnees, qreal ech = 1.0) :
     fnOBJ(fOBJ), fnDAT(fDAT), fnSVG(fSVG), rVue(vue) {
 
     deja = false;
@@ -957,7 +955,31 @@ void Unfold::displayUI(QString svg) {
         for (auto&& piece : page.pieces) {
             std::vector<sedge> pedges = calculeLignes(piece);
             // construction du polygone depuis lLignes à partir de lLignes[0]
-            QPolygonF qpoly = QPolygonF(PtsDepuisLignesDeCoupe(pedges));
+            QList<QList<QPointF>> lPoints = PtsDepuisLignesDeCoupe(pedges);
+            QList<QPolygonF> qpolys;
+            QPolygonF qpoly = QPolygon();
+            int nPlusGrand = 0;
+            int i = 0;
+            for (auto&& lp : lPoints) {
+                QPolygonF p = QPolygonF(lp);
+                qpolys.push_back(p);
+                QRectF bPoly = qpoly.boundingRect();
+                QRectF pPoly = p.boundingRect();
+                if ((pPoly.width() > bPoly.width()) || (pPoly.height() > bPoly.height())) {
+                    qpoly = p;
+                    nPlusGrand = i;
+                }
+                i++;
+            }
+
+            i=0;
+            for(auto&& qp : qpolys) {
+                if (i != nPlusGrand) {
+                    qpoly = qpoly.subtracted(qp);
+                }
+                i++;
+            }
+
             PieceItem *qp = new PieceItem(qpoly, this, &piece);
             qp->setBrush(QBrush(calculeCouleurPiece(piece)));
             qp->setData(0, piece.id);
@@ -1435,46 +1457,51 @@ QColor Unfold::calculeCouleurPiece(Piece p) {
     return c;
 }
 
-QList<QPointF> PtsDepuisLignesDeCoupe(std::vector<sedge> pe) {
+QList<QList<QPointF>> PtsDepuisLignesDeCoupe(std::vector<sedge> pe) {
     QList<QLineF> lLignes;
     for(auto&& e:pe){
         if (e.nb == 1)
             lLignes << QLineF(e.p1, e.p2);
     }
 
-    QPointF premPoint = lLignes.first().p1();
-    QPointF dernPoint = lLignes.first().p2();
-    QList<QPointF> lPoints;
-    lPoints << premPoint;
-    lPoints << dernPoint;
-    lLignes.removeFirst();
+
+    QList<QList<QPointF>> liste;
 
     while (lLignes.size() > 0) {
-        for (QList<QLineF>::const_iterator i = lLignes.constBegin(); i != lLignes.constEnd(); i++) {
-            QLineF l = *i;
-            if (eq(l.p1(), premPoint)) {
-                premPoint = l.p2();
-                lPoints.prepend(premPoint);
-                lLignes.erase(i);
-                break;
-            } else if (eq(l.p2(), premPoint)) {
-                premPoint = l.p1();
-                lPoints.prepend(premPoint);
-                lLignes.erase(i);
-                break;
-            } else if (eq(l.p1(), dernPoint)) {
-                dernPoint = l.p2();
-                lPoints.append(dernPoint);
-                lLignes.erase(i);
-                break;
-            } else if (eq(l.p2(), dernPoint)) {
-                dernPoint = l.p1();
-                lPoints.append(dernPoint);
-                lLignes.erase(i);
-                break;
+        QPointF premPoint = lLignes.first().p1();
+        QPointF dernPoint = lLignes.first().p2();
+        QList<QPointF> lPoints;
+        lPoints << premPoint;
+        lPoints << dernPoint;
+        lLignes.removeFirst();
+
+        while ((lLignes.size() > 0) && !eq(premPoint, dernPoint)) {
+            for (QList<QLineF>::const_iterator i = lLignes.constBegin(); i != lLignes.constEnd(); i++) {
+                QLineF l = *i;
+                if (eq(l.p1(), premPoint)) {
+                    premPoint = l.p2();
+                    lPoints.prepend(premPoint);
+                    lLignes.erase(i);
+                    break;
+                } else if (eq(l.p2(), premPoint)) {
+                    premPoint = l.p1();
+                    lPoints.prepend(premPoint);
+                    lLignes.erase(i);
+                    break;
+                } else if (eq(l.p1(), dernPoint)) {
+                    dernPoint = l.p2();
+                    lPoints.append(dernPoint);
+                    lLignes.erase(i);
+                    break;
+                } else if (eq(l.p2(), dernPoint)) {
+                    dernPoint = l.p1();
+                    lPoints.append(dernPoint);
+                    lLignes.erase(i);
+                    break;
+                }
             }
         }
+        liste.push_back(lPoints);
     }
-    lLignes.clear();
-    return lPoints;
+    return liste;
 }

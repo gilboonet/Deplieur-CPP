@@ -78,7 +78,7 @@ private:
     Ui::MainWindow *ui;
     //QGraphicsScene *scene;
     DialogNouveau *dN;
-    vueUI *vue;
+    QGraphicsView *vue;
 };
 
 #endif // MAINWINDOW_H

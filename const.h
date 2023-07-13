@@ -25,6 +25,7 @@ qreal       radToDeg(qreal);
 qreal       degToRad(qreal);
 bool        eq(qreal, qreal);
 bool        eq(QPointF, QPointF);
+QPointF     plusPetit(QPointF, QPointF);
 int         sgn(qreal);
 qreal       cmpo(qreal);
 QPointF     cmpo(QPointF);

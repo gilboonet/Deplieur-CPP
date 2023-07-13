@@ -26,8 +26,7 @@ SOURCES += \
     poigneerotation.cpp \
     triangle2d.cpp \
     triangle3d.cpp \
-    unfold.cpp \
-    vueui.cpp
+    unfold.cpp
 
 HEADERS += \
     const.h \
@@ -46,8 +45,7 @@ HEADERS += \
     poigneerotation.h \
     triangle2d.h \
     triangle3d.h \
-    unfold.h \
-    vueui.h
+    unfold.h
 
 FORMS += \
     dialognouveau.ui \

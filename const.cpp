@@ -23,6 +23,13 @@ bool eq(QPointF a, QPointF b) {
     return eq(a.x(), b.x()) && eq(a.y(), b.y());
 }
 
+QPointF plusPetit(QPointF a, QPointF b) {
+    if ((a.x() < b.x()) || (eq(a.x(), b.x()) && (a.y() < b.y())) )
+        return a;
+    else
+        return b;
+}
+
 qreal radToDeg(qreal r) {
     return (r * 180) / std::numbers::pi;
 }

@@ -3,18 +3,16 @@
 
 #include "lineitem.h"
 
-#include <QGraphicsScene>
-#include <QGridLayout>
-#include "vueui.h"
-
-#include <QActionGroup>
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QString>
-#include <QFile>
-#include <QMessageBox>
-#include <QDebug>
 #include <fstream>
+#include <QActionGroup>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QFile>
+#include <QFileDialog>
+#include <QGraphicsView>
+#include <QGridLayout>
+#include <QMessageBox>
+#include <QString>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,15 +21,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     QGridLayout *gridLayout;
-
     gridLayout = new QGridLayout(centralWidget());
     gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
-    auto scene = new QGraphicsScene(this);
-    vue = new vueUI();
+    vue = new QGraphicsView();
     vue->setInteractive(true);
     vue->setDragMode(QGraphicsView::RubberBandDrag);
     vue->setRubberBandSelectionMode(Qt::IntersectsItemShape);
-    vue->setScene(scene);
     gridLayout->addWidget(vue);
 
     zoomNormal();
@@ -223,7 +218,6 @@ void MainWindow::lanceNouveau() {
             unfold->init_flaps();
             unfold->displayUI();
             unlockMenus();
-            qInfo() << "apres unlockmenus";
         }
     };
 

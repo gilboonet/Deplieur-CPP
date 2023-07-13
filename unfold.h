@@ -10,7 +10,8 @@
 #include <numbers>
 #include <ostream>
 #include <QGraphicsSimpleTextItem>
-#include "vueui.h"
+//#include "vueui.h"
+#include <QGraphicsView>
 #include <QPointF>
 #include <QString>
 #include <QVector3D>
@@ -77,10 +78,10 @@ private :
 
 public :
     Unfold();
-    Unfold(std::string, std::string, std::string, vueUI*, const QByteArray *, qreal ech);
+    Unfold(std::string, std::string, std::string, QGraphicsView*, const QByteArray *, qreal ech);
 
     std::vector<Page>       pages;
-    vueUI*                  rVue;
+    QGraphicsView*          rVue;
     QGraphicsLineItem*      flash;
     QGraphicsLineItem*      poigneeR;
     bool                    deja;
@@ -142,7 +143,7 @@ std::ostream& operator <<(std::ostream& os, const QVector3D& v);
 std::ostream& operator <<(std::ostream& os, const Triangle2d& t);
 std::ostream& operator <<(std::ostream& os, const Triangle3d& t);
 
-QList<QPointF> PtsDepuisLignesDeCoupe(std::vector<sedge>);
+QList<QList<QPointF>> PtsDepuisLignesDeCoupe(std::vector<sedge>);
 void sceneSelChange();
 
 #endif // UNFOLD_H
