@@ -4,7 +4,6 @@
 #include <QGraphicsSimpleTextItem>
 #include <QString>
 
-//#include "titleitem.h"
 #include "pieceitem.h"
 #include "unfold.h"
 

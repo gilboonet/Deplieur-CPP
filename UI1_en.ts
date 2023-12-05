@@ -27,322 +27,328 @@
         <translation>Unfolder UI</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="64"/>
+        <location filename="mainwindow.ui" line="32"/>
         <source>Fichier</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="80"/>
+        <location filename="mainwindow.ui" line="48"/>
         <source>Affichage</source>
         <translation>Display</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="92"/>
+        <location filename="mainwindow.ui" line="60"/>
         <source>Piece</source>
         <translation>Piece</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="111"/>
+        <location filename="mainwindow.ui" line="79"/>
         <source>Gabarit</source>
         <translation>Pattern</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="118"/>
+        <location filename="mainwindow.ui" line="86"/>
         <source>Format de page</source>
         <translation>Page format</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="130"/>
+        <location filename="mainwindow.ui" line="98"/>
         <source>Mode Languettes</source>
         <translation>Flap mode</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="138"/>
+        <location filename="mainwindow.ui" line="106"/>
         <source>Haut. Languettes</source>
         <translation>Flap height</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="159"/>
+        <location filename="mainwindow.ui" line="127"/>
         <source>Aide</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="173"/>
+        <location filename="mainwindow.ui" line="142"/>
         <source>Nouveau</source>
         <translation>New</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="178"/>
+        <location filename="mainwindow.ui" line="147"/>
         <source>Ouvrir</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="183"/>
+        <location filename="mainwindow.ui" line="152"/>
         <source>Exporter</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="188"/>
+        <location filename="mainwindow.ui" line="157"/>
         <source>Quitter</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="193"/>
-        <location filename="mainwindow.ui" line="198"/>
+        <location filename="mainwindow.ui" line="162"/>
+        <location filename="mainwindow.ui" line="167"/>
         <source>Zoom +</source>
         <translation>Zoom +</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="201"/>
+        <location filename="mainwindow.ui" line="170"/>
         <source>+</source>
         <translation>+</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="206"/>
+        <location filename="mainwindow.ui" line="175"/>
         <source>Zoom 1:1</source>
         <translation>Zoom 1:1</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="209"/>
+        <location filename="mainwindow.ui" line="178"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="214"/>
+        <location filename="mainwindow.ui" line="183"/>
         <source>Zoom -</source>
         <translation>Zoom -</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="217"/>
+        <location filename="mainwindow.ui" line="186"/>
         <source>-</source>
         <translation>-</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="222"/>
+        <location filename="mainwindow.ui" line="191"/>
         <source>Sauver</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="227"/>
+        <location filename="mainwindow.ui" line="196"/>
         <source>Tourner 15° Droite</source>
         <translation>Turn Right 15°</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="230"/>
+        <location filename="mainwindow.ui" line="199"/>
         <source>Alt+*</source>
         <translation>Alt + *</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="238"/>
+        <location filename="mainwindow.ui" line="207"/>
         <source>Tourner 5° Droite</source>
         <translation>Turn Right 5°</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="241"/>
+        <location filename="mainwindow.ui" line="210"/>
         <source>*</source>
         <translation>*</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="249"/>
+        <location filename="mainwindow.ui" line="218"/>
         <source>Tourner 5° Gauche</source>
         <translation>Turn Left 5°</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="252"/>
+        <location filename="mainwindow.ui" line="221"/>
         <source>/</source>
         <translation>/</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="260"/>
+        <location filename="mainwindow.ui" line="229"/>
         <source>Tourner 14° Gauehc</source>
         <translation>Turn Left 15°</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="265"/>
+        <location filename="mainwindow.ui" line="234"/>
         <source>Tourner 15° Gauche</source>
         <translation>Turn Left 15°</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="268"/>
+        <location filename="mainwindow.ui" line="237"/>
         <source>Alt+/</source>
         <translation>Alt + /</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="276"/>
+        <location filename="mainwindow.ui" line="245"/>
         <source>Monter</source>
         <translation>Up</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="279"/>
+        <location filename="mainwindow.ui" line="248"/>
         <source>Ctrl+Up</source>
         <translation>Ctrl+ Up</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="287"/>
+        <location filename="mainwindow.ui" line="256"/>
         <source>Droite</source>
         <translation>Right</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="290"/>
+        <location filename="mainwindow.ui" line="259"/>
         <source>Ctrl+Right</source>
         <translation>Ctrl + Right</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="298"/>
+        <location filename="mainwindow.ui" line="267"/>
         <source>Gauche</source>
         <translation>Left</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="301"/>
+        <location filename="mainwindow.ui" line="270"/>
         <source>Ctrl+Left</source>
         <translation>Ctrl + Left</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="309"/>
+        <location filename="mainwindow.ui" line="278"/>
         <source>Descendre</source>
         <translation>Down</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="312"/>
+        <location filename="mainwindow.ui" line="281"/>
         <source>Ctrl+Down</source>
         <translation>Ctrl + Down</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="320"/>
+        <location filename="mainwindow.ui" line="289"/>
         <source>Tourner 1° Droite</source>
         <translation>Turn Right 1°</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="323"/>
+        <location filename="mainwindow.ui" line="292"/>
         <source>Ctrl+*</source>
         <translation>Ctrl + *</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="331"/>
+        <location filename="mainwindow.ui" line="300"/>
         <source>Tourner 1° Gauche</source>
         <translation>Turn Left 1°</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="334"/>
+        <location filename="mainwindow.ui" line="303"/>
         <source>Ctrl+/</source>
         <translation>Ctrl + /</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="345"/>
+        <location filename="mainwindow.ui" line="314"/>
         <source>Optimiser nums</source>
         <translation>Nums Optimizing</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="515"/>
+        <location filename="mainwindow.ui" line="484"/>
         <source>Videos</source>
         <translation>Videos</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="489"/>
+        <source>Gabarits</source>
+        <translatorcomment>Patterns</translatorcomment>
+        <translation>Patterns</translation>
     </message>
     <message>
         <source>Optimiser numéros</source>
         <translation type="vanished">Optimize numbers</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="353"/>
+        <location filename="mainwindow.ui" line="322"/>
         <source>A4</source>
         <translation>A4</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="361"/>
+        <location filename="mainwindow.ui" line="330"/>
         <source>A5</source>
         <translation>A5</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="369"/>
+        <location filename="mainwindow.ui" line="338"/>
         <source>A3</source>
         <translation>A3</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="377"/>
+        <location filename="mainwindow.ui" line="346"/>
         <source>Cricut 12x12</source>
         <translation>Cricut 12x12</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="385"/>
+        <location filename="mainwindow.ui" line="354"/>
         <source>Cricut 12x24</source>
         <translation>Cricut 12x24</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="393"/>
+        <location filename="mainwindow.ui" line="362"/>
         <source>Cricut 4.5x12</source>
         <translation>Cricut 4.5x12</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="401"/>
+        <location filename="mainwindow.ui" line="370"/>
         <source>Cricut 4.5x6.5</source>
         <translation>Cricut 4.5x6.5</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="409"/>
+        <location filename="mainwindow.ui" line="378"/>
         <source>Aucune</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="417"/>
+        <location filename="mainwindow.ui" line="386"/>
         <source>1 / paire d&apos;aretes</source>
         <translation>1 / edge pair</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="425"/>
+        <location filename="mainwindow.ui" line="394"/>
         <source>Toutes</source>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="433"/>
+        <location filename="mainwindow.ui" line="402"/>
         <source>11</source>
         <translation>11</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="441"/>
+        <location filename="mainwindow.ui" line="410"/>
         <source>12</source>
         <translation>12</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="449"/>
+        <location filename="mainwindow.ui" line="418"/>
         <source>13</source>
         <translation>13</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="457"/>
+        <location filename="mainwindow.ui" line="426"/>
         <source>14</source>
         <translation>14</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="465"/>
+        <location filename="mainwindow.ui" line="434"/>
         <source>15</source>
         <translation>15</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="473"/>
+        <location filename="mainwindow.ui" line="442"/>
         <source>16</source>
         <translation>16</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="481"/>
+        <location filename="mainwindow.ui" line="450"/>
         <source>17</source>
         <translation>17</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="489"/>
+        <location filename="mainwindow.ui" line="458"/>
         <source>18</source>
         <translation>18</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="497"/>
+        <location filename="mainwindow.ui" line="466"/>
         <source>19</source>
         <translation>19</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="505"/>
+        <location filename="mainwindow.ui" line="474"/>
         <source>20</source>
         <translation>20</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="510"/>
+        <location filename="mainwindow.ui" line="479"/>
         <source>Wiki</source>
         <translation>Wiki</translation>
     </message>

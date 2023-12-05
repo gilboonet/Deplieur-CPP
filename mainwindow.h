@@ -73,6 +73,7 @@ private slots:
 
     void openWikiPage();
     void openVideosPage();
+    void openGabaritsPage();
 
 private:
     Ui::MainWindow *ui;

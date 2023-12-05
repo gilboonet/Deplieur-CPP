@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionWiki, &QAction::triggered, this, &MainWindow::openWikiPage);
     connect(ui->actionVideos, &QAction::triggered, this, &MainWindow::openVideosPage);
+    connect(ui->actionGabarits, &QAction::triggered, this, &MainWindow::openGabaritsPage);
 
     unfold = nullptr;
     dN = nullptr;
@@ -132,6 +133,10 @@ void MainWindow::openWikiPage() {
 
 void MainWindow::openVideosPage() {
     QDesktopServices::openUrl(QUrl("https://www.youtube.com/playlist?list=PLowPymO2T_CcX8-VNbXaWQd8ghH332D4c"));
+}
+
+void MainWindow::openGabaritsPage() {
+    QDesktopServices::openUrl(QUrl("https://gilboonet.github.io/Gabarits.html"));
 }
 
 void MainWindow::langH11() { langHSet(11); }
@@ -329,9 +334,9 @@ void MainWindow::zoomNormal()
 }
 
 void MainWindow::zoomPlus() {
-    vue->scale(1.25, 1.25);
+    vue->scale(1.125, 1.125);
 }
 
 void MainWindow::zoomMoins() {
-    vue->scale(0.8, 0.8);
+    vue->scale(0.888, 0.888);
 }

@@ -343,8 +343,8 @@ void Unfold::load_DAT(const QByteArray *donnees) {
         }
         elem = tsDAT.readLine();
     }
-    qInfo() << "faces " << faces.size();
-    qInfo() << "triangles depl " << facettes.size();
+    //qInfo() << "faces " << faces.size();
+    //qInfo() << "triangles depl " << facettes.size();
 }
 
 void Unfold::pageFormat(int n) {
@@ -432,8 +432,10 @@ struct pd {
 void Unfold::reducePages() {
     std::vector <pd> nouvPage;
     for (auto&& pg : pages) {
+        //qInfo() << pg.id * cmpo(pageDim.x()) << (pg.id+1) * cmpo(pageDim.x());
         for (auto&& pi : pg.pieces) {
-            QPointF c = pi.O + (pi.pMax - pi.pMin);
+            //QPointF c = pi.O + (pi.pMax - pi.pMin);
+            QPointF c = pi.O + cmpo(calculeCentrePiece(pi));
             int p = c.x() / cmpo(pageDim.x());
             if (p != pg.id) {
                 pd d = {pi.id, pg.id, p};
@@ -879,7 +881,7 @@ void Unfold::displayUI(QString svg) {
         root.set_attr("viewBox", "0 0 533 754");
 
         // Basic CSS support
-        root.style("path").set_attr("fill", "none").set_attr("stroke-width", "0.15mm");
+        root.style("path").set_attr("fill", "none");
     }
 
     QGraphicsScene* scene = new QGraphicsScene;
@@ -888,10 +890,6 @@ void Unfold::displayUI(QString svg) {
     flash->setPen(QPen(Qt::green, 2));
     flash->setZValue(10);
     scene->addItem(flash);
-//    poigneeR = new QGraphicsLineItem();
-//    poigneeR->setVisible(false);
-//    poigneeR->setZValue(10);
-//    scene->addItem(poigneeR);
 
     int dxP = 0;
     int fs = 0;
@@ -904,7 +902,7 @@ void Unfold::displayUI(QString svg) {
         fs = 1;
     }
 
-    SVG::Group *pageGroup;
+    SVG::Group *pageGroup, *pGTextes = nullptr;
     SVG::Path *pCoupes = nullptr, *pTextes = nullptr;
     SVG::Path *pPlisM = nullptr, *pPlisV = nullptr, *pPMS, *pPVS;
 
@@ -918,6 +916,7 @@ void Unfold::displayUI(QString svg) {
         pPMS = nullptr;
         pPVS = nullptr;
         pTextes = nullptr;
+        pGTextes = nullptr;
 
         bool pageOK = page.pieces.size() > 0;
         if (doSVG && pageOK) {
@@ -925,13 +924,10 @@ void Unfold::displayUI(QString svg) {
             QString snum = QString("_%1").arg(page.id+1, 3, 10, QChar('0'));
             pageGroup->set_attr("id", QString("page%1").arg(snum).toStdString());
 
-            pTextes = pageGroup->add_child<SVG::Path>();
-            pTextes->set_attr("id", QString("nums%1").arg(snum).toStdString());
-            pTextes->set_attr("stroke", "black");
-
             pCoupes = pageGroup->add_child<SVG::Path>();
             pCoupes->set_attr("id", QString("coupes%1").arg(snum).toStdString());
             pCoupes->set_attr("stroke", "red");
+            pCoupes->set_attr("stroke-width", "1.27");
 
             pPlisM = pageGroup->add_child<SVG::Path>();
             pPlisM->set_attr("id", QString("plisM%1").arg(snum).toStdString());
@@ -941,15 +937,20 @@ void Unfold::displayUI(QString svg) {
             pPMS = pageGroup->add_child<SVG::Path>();
             pPMS->set_attr("id", QString("marqueM%1").arg(snum).toStdString());
             pPMS->set_attr("stroke", "brown");
+            pPMS->set_attr("display", "none");
 
             pPlisV = pageGroup->add_child<SVG::Path>();
             pPlisV->set_attr("id", QString("plisV%1").arg(snum).toStdString());
             pPlisV->set_attr("stroke", "green");
             pPlisV->set_attr("stroke-dasharray", "4 1 1 1");
+            pPlisV->set_attr("stroke-width", "1.27");
 
             pPVS = pageGroup->add_child<SVG::Path>();
             pPVS->set_attr("id", QString("marqueV%1").arg(snum).toStdString());
             pPVS->set_attr("stroke", "green");
+
+            pGTextes = pageGroup->add_child<SVG::Group>();
+            pGTextes->set_attr("id", QString("nums%1").arg(snum).toStdString());
         }
 
         for (auto&& piece : page.pieces) {
@@ -997,13 +998,6 @@ void Unfold::displayUI(QString svg) {
             cTIT = tt - b;
             tit->setPos(cTIT);
             tit->setZValue(5);
-
-//            if (IdPieceCourante == piece.id) {
-//                PoigneeRotation *pX = new PoigneeRotation(QRectF(cTIT.x()+b.x()+150, cTIT.y()+b.y(), 5, 5), qp, this);
-//                poigneeR->setLine(QLineF(cTIT + b, pX->rect().center()));
-//                poigneeR->setParentItem(qp);
-//                poigneeR->setVisible(true);
-//            }
 
             if (doSVG && pageOK) {
                 SVG::Path* tp = pageGroup->add_child<SVG::Path>();
@@ -1144,8 +1138,11 @@ void Unfold::displayUI(QString svg) {
                         ti->setZValue(2);
                         ti->setParentItem(qp);
                         if (doSVG && pageOK) {
-                            drawHersheyInt(pTextes, c + b + qp->pos()
-                            , n, 360-deg, 0.3);
+                            pTextes = pGTextes->add_child<SVG::Path>();
+                            //pTextes->set_attr("id", QString("nums%1").arg(snum).toStdString());
+                            pTextes->set_attr("stroke", "black");
+                            pTextes->set_attr("stroke-width", "1");
+                            drawHersheyInt(pTextes, c + b + qp->pos(), n, 360-deg, 0.5);
                         }
                     }
                 } else {
@@ -1307,6 +1304,22 @@ void Unfold::splitPiece(int a, int b) {
     std::vector<fct> pool;
     std::vector<fct> newP;
 
+    Piece* pieceA = getPiece(fA->piece);
+    if (!pieceA) {
+        //qInfo() << "SPLIT : erreur piece " << fA->piece;
+        return;
+    }
+    // ajustement coord. piece
+    /*pieceA->pMin = QPoint(dMax, dMax);
+    pieceA->pMin = QPoint(dMin, dMin);
+    for (auto&& f : pieceA->faceId) {
+        getFacette(f)->triangle += pieceA->O;
+        pieceA->recadre(getFacette(f)->triangle);
+    }
+
+    pieceA->O = QPointF();
+    */
+
     for (auto&& f : facettes) {
         if (f.page == fA->page) {
             fct fc;
@@ -1342,13 +1355,9 @@ void Unfold::splitPiece(int a, int b) {
     } while (ok);
 
     int nPiece = pieceNextID();
-    Piece* pieceA = getPiece(fA->piece);
-    if (!pieceA) {
-        //qInfo() << "SPLIT : erreur piece " << fA->piece;
-        return;
-    }
     Piece nP = Piece(nPiece);
-    nP.O = QPointF(0,0);
+    //nP.O = QPointF(0,0);
+    nP.O = pieceA->O;
 
     for (auto&& p : newP ) {
         Facette *pf = getFacette(p.id);
